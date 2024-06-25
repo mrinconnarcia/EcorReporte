@@ -99,8 +99,8 @@ class InfoAppPage extends StatelessWidget {
       bottomNavigationBar: SharedBottomNavigationBar(
         currentIndex: 1,
         onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/home-app');
+          if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/add-report');
           }
         },
       ),

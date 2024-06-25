@@ -10,7 +10,7 @@ class SharedBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xFF9DE976), // Light green color
+        color: Color(0xFF9DE976),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: BottomNavigationBar(
@@ -19,29 +19,16 @@ class SharedBottomNavigationBar extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.white,
+        selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.black,
         items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.info), label: ''),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
+              icon: Icon(Icons.add_circle_outline), label: ''),
           BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article_outlined),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: '',
-          ),
+              icon: Icon(Icons.article_outlined), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
         ],
       ),
     );
