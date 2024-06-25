@@ -58,7 +58,7 @@ class RegisterPage extends StatelessWidget {
               },
               child: Text('Sign Up'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.blue,
+                backgroundColor: Colors.blue,
                 minimumSize: Size(double.infinity, 50),
               ),
             ),

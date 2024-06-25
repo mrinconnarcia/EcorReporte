@@ -60,7 +60,7 @@ class AddReportPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Seleccionar archivo'),
-                    style: ElevatedButton.styleFrom(primary: Colors.grey),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
                   ),
                   SizedBox(height: 16),
                   Container(
@@ -72,7 +72,7 @@ class AddReportPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Enviar'),
-                    style: ElevatedButton.styleFrom(primary: Colors.blue),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                   ),
                 ],
               ),

@@ -37,13 +37,13 @@ class ProfilePage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Actualizar cuenta'),
-                    style: ElevatedButton.styleFrom(primary: Color(0xFF9DE976)),
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF9DE976)),
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Eliminar cuenta'),
-                    style: ElevatedButton.styleFrom(primary: Colors.red),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   ),
                 ],
               ),

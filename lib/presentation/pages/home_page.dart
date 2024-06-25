@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
                 },
                 child: Text('Log In'),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.blue,
+                  backgroundColor: Colors.blue,
                   minimumSize: Size(double.infinity, 50),
                 ),
               ),
@@ -29,7 +29,7 @@ class HomePage extends StatelessWidget {
                 },
                 child: Text('Sign Up'),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.blue,
+                  backgroundColor: Colors.blue,
                   minimumSize: Size(double.infinity, 50),
                 ),
               ),
