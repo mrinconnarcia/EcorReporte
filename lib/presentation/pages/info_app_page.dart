@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
+import '../../data/models/info_model.dart';
+import '../../data/services/info_service.dart';
 import '../widgets/SharedBottomNavigationBar.dart';
 
-class InfoAppPage extends StatelessWidget {
+class InfoAppPage extends StatefulWidget {
+  @override
+  _InfoAppPageState createState() => _InfoAppPageState();
+}
+
+class _InfoAppPageState extends State<InfoAppPage> {
+  late Future<InfoModel> futureInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    futureInfo = InfoService().fetchInfo().then((data) => InfoModel.fromJson(data));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,7 +27,7 @@ class InfoAppPage extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
             child: Row(
               children: [
-                Image.asset('../../../assets/eco_reporte_logo.png', height: 40),
+                Image.asset('assets/eco_reporte_logo.png', height: 40),
                 SizedBox(width: 8),
                 Text(
                   'EcoReporte',
@@ -22,76 +37,42 @@ class InfoAppPage extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            height: 150,
-                            color: Colors.grey[300],
+            child: FutureBuilder<InfoModel>(
+              future: futureInfo,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData) {
+                  return Center(child: Text('No data available'));
+                } else {
+                  InfoModel info = snapshot.data!;
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            info.title,
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                           ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            'Lorem ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.',
+                          SizedBox(height: 16),
+                          Text(
+                            info.description,
+                            style: TextStyle(fontSize: 16),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 16),
+                          Text(
+                            info.content,
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            'Lorem ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.',
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            height: 150,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Lorem ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen.',
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 100,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Container(
-                            height: 100,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                  );
+                }
+              },
             ),
           ),
         ],
@@ -99,8 +80,17 @@ class InfoAppPage extends StatelessWidget {
       bottomNavigationBar: SharedBottomNavigationBar(
         currentIndex: 1,
         onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/home-app');
+          }
           if (index == 2) {
             Navigator.pushReplacementNamed(context, '/add-report');
+          }
+          if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/history');
+          }
+          if (index == 4) {
+            Navigator.pushReplacementNamed(context, '/profile');
           }
         },
       ),

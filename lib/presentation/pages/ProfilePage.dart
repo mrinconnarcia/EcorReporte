@@ -57,6 +57,18 @@ class ProfilePage extends StatelessWidget {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/home-app');
           }
+
+          if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/info-app');
+          }
+
+          if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/add-report');
+          }
+
+          if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/history');
+          }
         },
       ),
     );

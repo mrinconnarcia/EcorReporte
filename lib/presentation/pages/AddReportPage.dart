@@ -83,8 +83,17 @@ class AddReportPage extends StatelessWidget {
       bottomNavigationBar: SharedBottomNavigationBar(
         currentIndex: 2,
         onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/home-app');
+          }
+          if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/info-app');
+          }
           if (index == 3) {
             Navigator.pushReplacementNamed(context, '/history');
+          }
+          if (index == 4) {
+            Navigator.pushReplacementNamed(context, '/profile');
           }
         },
       ),

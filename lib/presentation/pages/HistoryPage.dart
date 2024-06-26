@@ -35,6 +35,15 @@ class HistoryPage extends StatelessWidget {
       bottomNavigationBar: SharedBottomNavigationBar(
         currentIndex: 3,
         onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/home-app');
+          }
+          if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/info-app');
+          }
+          if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/add-report');
+            }
           if (index == 4) {
             Navigator.pushReplacementNamed(context, '/profile');
           }

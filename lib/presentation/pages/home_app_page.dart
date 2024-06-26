@@ -8,7 +8,7 @@ class HomeAppPage extends StatelessWidget {
       body: Column(
         children: [
           Container(
-            color: Color(0xFF9DE976),
+            color: Color(0xFF9DE976), // Verde asociado con la naturaleza
             padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
             child: Row(
               children: [
@@ -16,7 +16,10 @@ class HomeAppPage extends StatelessWidget {
                 SizedBox(width: 8),
                 Text(
                   'EcoReporte',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ],
             ),
@@ -29,13 +32,39 @@ class HomeAppPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'EcoReporte',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      '¡Tu eco, tu voz!',
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E3F20)),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'EcoReporte, el poder de cambiar.',
+                      style: TextStyle(fontSize: 18, color: Color(0xFF3E8914)),
                     ),
                     SizedBox(height: 16),
-                    Container(
-                      height: 150,
-                      color: Colors.grey[300],
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        '../../../assets/ambiental_img.png',
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 200,
+                            color: Color(0xFF3E8914),
+                            child: Center(
+                              child: Icon(Icons.error, color: Colors.white),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     SizedBox(height: 16),
                     Row(
@@ -43,13 +72,21 @@ class HomeAppPage extends StatelessWidget {
                         Expanded(
                           child: Container(
                             height: 100,
-                            color: Colors.grey[300],
+                            decoration: BoxDecoration(
+                              color: Color(0xFF9DE976),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Icon(Icons.nature_people,
+                                  size: 50, color: Colors.white),
+                            ),
                           ),
                         ),
                         SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            'Lorem ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.',
+                            'Participa activamente en la mejora de tu comunidad reportando problemas ambientales.',
+                            style: TextStyle(fontSize: 16),
                           ),
                         ),
                       ],
@@ -59,21 +96,30 @@ class HomeAppPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            'Lorem ipsum es simplemente el texto de relleno de las imprentas y archivos de texto.',
+                            'Utiliza la tecnología para crear un impacto positivo en tu entorno y mejorar la calidad de vida.',
+                            style: TextStyle(fontSize: 16),
                           ),
                         ),
                         SizedBox(width: 16),
                         Expanded(
                           child: Container(
                             height: 100,
-                            color: Colors.grey[300],
+                            decoration: BoxDecoration(
+                              color: Color(0xFF1E3F20),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Icon(Icons.eco,
+                                  size: 50, color: Colors.white),
+                            ),
                           ),
                         ),
                       ],
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'Lorem ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los mezcló de tal manera que logró hacer un libro de textos especimen.',
+                      'EcoReporte es una plataforma innovadora que te permite informar sobre problemas ambientales en tu comunidad de manera fácil y rápida. Con seguimiento en tiempo real de tus reportes y respuestas de las autoridades, juntos podemos crear un cambio significativo en nuestro entorno. ¡Únete a la comunidad de EcoReporte y sé parte del cambio!',
+                      style: TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
@@ -87,6 +133,15 @@ class HomeAppPage extends StatelessWidget {
         onTap: (index) {
           if (index == 1) {
             Navigator.pushReplacementNamed(context, '/info-app');
+          }
+          if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/add-report');
+          }
+          if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/history');
+          }
+          if (index == 4) {
+            Navigator.pushReplacementNamed(context, '/profile');
           }
         },
       ),
