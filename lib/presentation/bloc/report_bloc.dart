@@ -6,20 +6,20 @@ import 'package:ecoreporte/domain/usecases/create_report.dart';
 part 'report_event.dart';
 part 'report_state.dart';
 
-class ReportBloc extends Bloc<ReportEvent, ReportState> {
-  final CreateReport createReport;
+// class ReportBloc extends Bloc<ReportEvent, ReportState> {
+//   final CreateReport createReport;
 
-  ReportBloc({required this.createReport}) : super(ReportInitial());
+//   ReportBloc({required this.createReport}) : super(ReportInitial());
 
-  @override
-  Stream<ReportState> mapEventToState(ReportEvent event) async* {
-    if (event is CreateReportEvent) {
-      yield ReportLoading();
-      final failureOrSuccess = await createReport(event.report);
-      yield failureOrSuccess.fold(
-        (failure) => ReportError(message: 'Error creating report'),
-        (_) => ReportCreated(),
-      );
-    }
-  }
-}
+//   @override
+//   Stream<ReportState> mapEventToState(ReportEvent event) async* {
+//     if (event is CreateReportEvent) {
+//       yield ReportLoading();
+//       final failureOrSuccess = await createReport(event.report);
+//       yield failureOrSuccess.fold(
+//         (failure) => ReportError(message: 'Error creating report'),
+//         (_) => ReportCreated(),
+//       );
+//     }
+//   }
+// }
