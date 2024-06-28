@@ -16,22 +16,30 @@ class HomePage extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushNamed(context, '/login');
                 },
-                child: Text('Log In'),
+                child: Text('Iniciar sesión'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  minimumSize: Size(double.infinity, 50),
-                ),
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, 50),
+                        // shape: RoundedRectangleBorder(
+                        //   borderRadius: BorderRadius.circular(8),
+                        // ),
+                      ),
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');
                 },
-                child: Text('Sign Up'),
+                child: Text('Registrase'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  minimumSize: Size(double.infinity, 50),
-                ),
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, 50),
+                        // shape: RoundedRectangleBorder(
+                        //   borderRadius: BorderRadius.circular(8),
+                        // ),
+                      ),
               ),
             ],
           ),

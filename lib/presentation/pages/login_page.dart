@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../../data/repositories/user_repository_impl.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -124,22 +125,25 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      // Simulación de una llamada al backend
-      final response = await http.post(
-        Uri.parse('https://api.example.com/login'),
-        body: json.encode({
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        }),
-        headers: {'Content-Type': 'application/json'},
-      );
+      try {
+        final userRepository = Provider.of<UserRepository>(context, listen: false);
+        final result = await userRepository.login(
+          _emailController.text,
+          _passwordController.text,
+        );
 
-      if (response.statusCode == 200) {
-        Navigator.pushNamed(context, '/home-app');
-      } else {
+        if (result == true) {
+          Navigator.pushNamed(context, '/home-app');
+        } else {
+          setState(() {
+            _emailError = 'Email o contraseña incorrectos';
+            _passwordError = 'Email o contraseña incorrectos';
+          });
+        }
+      } catch (e) {
         setState(() {
-          _emailError = 'Email o contraseña incorrectos';
-          _passwordError = 'Email o contraseña incorrectos';
+          _emailError = 'Error al iniciar sesión. Por favor, inténtelo de nuevo.';
+          _passwordError = 'Error al iniciar sesión. Por favor, inténtelo de nuevo.';
         });
       }
     }

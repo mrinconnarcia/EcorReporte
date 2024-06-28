@@ -26,12 +26,26 @@ class _InfoAppPageState extends State<InfoAppPage> {
             color: Color(0xFF9DE976),
             padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.asset('assets/eco_reporte_logo.png', height: 40),
-                SizedBox(width: 8),
-                Text(
-                  'EcoReporte',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    Image.asset('assets/eco_reporte_logo.png', height: 40),
+                    SizedBox(width: 8),
+                    Text(
+                      'EcoReporte',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: Icon(Icons.exit_to_app),
+                  onPressed: () {
+                    // Aquí puedes agregar lógica adicional para cerrar sesión si es necesario
+                    Navigator.of(context).pushReplacementNamed('/');
+                  },
+                  tooltip: 'Cerrar sesión',
                 ),
               ],
             ),
@@ -58,9 +72,11 @@ class _InfoAppPageState extends State<InfoAppPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (index % 2 == 0)
-                              _buildImageTextSection(info.title, info.description, true),
+                              _buildImageTextSection(
+                                  info.title, info.description, true),
                             if (index % 2 != 0)
-                              _buildImageTextSection(info.title, info.description, false),
+                              _buildImageTextSection(
+                                  info.title, info.description, false),
                             SizedBox(height: 16),
                             Text(
                               info.content,
@@ -99,7 +115,8 @@ class _InfoAppPageState extends State<InfoAppPage> {
     );
   }
 
-  Widget _buildImageTextSection(String title, String description, bool imageLeft) {
+  Widget _buildImageTextSection(
+      String title, String description, bool imageLeft) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: imageLeft
@@ -120,7 +137,8 @@ class _InfoAppPageState extends State<InfoAppPage> {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -139,7 +157,8 @@ class _InfoAppPageState extends State<InfoAppPage> {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Text(

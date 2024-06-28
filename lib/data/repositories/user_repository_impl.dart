@@ -1,34 +1,31 @@
-// import 'package:flutter/foundation.dart';
-// import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../datasources/remote_data_source.dart';
+import '../../core/error/failure.dart';
 
-// import '../../domain/entities/user.dart';
-// import '../../domain/repositories/user_repository.dart';
-// import '../../core/error/failures.dart';
-// import '../../core/error/exceptions.dart';
-// import '../datasources/remote/remote_data_source.dart';
+class UserRepositoryImpl implements UserRepository {
+  final RemoteDataSource remoteDataSource;
 
-// class UserRepositoryImpl implements UserRepository {
-//   final RemoteDataSource remoteDataSource;
+  UserRepositoryImpl(this.remoteDataSource);
 
-//   UserRepositoryImpl({required this.remoteDataSource});
+  @override
+  Future<Either<Failure, User>> login(String email, String password) async {
+    try {
+      final user = await remoteDataSource.login(email, password);
+      return Right(user);
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
 
-//   @override
-//   Future<Either<Failure, bool>> login(String email, String password) async {
-//     try {
-//       final result = await remoteDataSource.login(email, password);
-//       return Right(result);
-//     } on ServerException {
-//       return Left(ServerFailure());
-//     }
-//   }
-
-//   @override
-//   Future<Either<Failure, bool>> register(String name, String email, String password, bool acceptNewsletter) async {
-//     try {
-//       final result = await remoteDataSource.register(name, email, password, acceptNewsletter);
-//       return Right(result);
-//     } on ServerException {
-//       return Left(ServerFailure());
-//     }
-//   }
-// }
+  @override
+  Future<Either<Failure, User>> register(User user, String password) async {
+    try {
+      final registeredUser = await remoteDataSource.register(user, password);
+      return Right(registeredUser);
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+}

@@ -1,22 +1,14 @@
-// import 'package:dartz/dartz.dart';
-// import '../../core/error/failures.dart';
-// import '../../core/usecase/usecase.dart';
-// import '../repositories/user_repository.dart';
+import 'package:dartz/dartz.dart';
+import '../entities/user.dart';
+import '../repositories/user_repository.dart';
+import '../../core/error/failure.dart';
 
-// class Login implements UseCase<bool, LoginParams> {
-//   final UserRepository repository;
+class Login {
+  final UserRepository repository;
 
-//   Login(this.repository);
+  Login(this.repository);
 
-//   @override
-//   Future<Either<Failure, bool>> call(LoginParams params) async {
-//     return await repository.login(params.email, params.password);
-//   }
-// }
-
-// class LoginParams {
-//   final String email;
-//   final String password;
-
-//   LoginParams({required this.email, required this.password});
-// }
+  Future<Either<Failure, User>> call(String email, String password) async {
+    return await repository.login(email, password);
+  }
+}

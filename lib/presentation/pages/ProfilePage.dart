@@ -11,10 +11,27 @@ class ProfilePage extends StatelessWidget {
             color: Color(0xFF9DE976),
             padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.asset('assets/eco_reporte_logo.png', height: 40),
-                SizedBox(width: 8),
-                Text('EcoReporte', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Row(
+                  children: [
+                    Image.asset('assets/eco_reporte_logo.png', height: 40),
+                    SizedBox(width: 8),
+                    Text(
+                      'EcoReporte',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: Icon(Icons.exit_to_app),
+                  onPressed: () {
+                    // Aquí puedes agregar lógica adicional para cerrar sesión si es necesario
+                    Navigator.of(context).pushReplacementNamed('/');
+                  },
+                  tooltip: 'Cerrar sesión',
+                ),
               ],
             ),
           ),
@@ -24,7 +41,9 @@ class ProfilePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Hola!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text('Hola!',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   Text('Bienvenido, Martín', style: TextStyle(fontSize: 18)),
                   SizedBox(height: 20),
                   InfoRow(label: 'Nombre:', value: 'Martin'),
@@ -37,13 +56,15 @@ class ProfilePage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Actualizar cuenta'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF9DE976)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF9DE976)),
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Eliminar cuenta'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   ),
                 ],
               ),
