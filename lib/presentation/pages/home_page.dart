@@ -10,7 +10,7 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Image.asset('../assets/eco_reporte_logo.png', height: 200),
+              Image.asset('assets/eco_reporte_logo.png', height: 200),
               SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {

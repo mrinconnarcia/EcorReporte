@@ -1,19 +1,11 @@
 class User {
-  // final int id;
-  final String nombre;
-  // final String apellido;
+  final String name;
   final String email;
-  // final String genero;
-  // final String telefono;
-  final String rol;
+  final String role;
 
   User({
-    // required this.id,
-    required this.nombre,
-    // required this.apellido,
+    required this.name,
     required this.email,
-    // required this.genero,
-    // required this.telefono,
-    required this.rol,
+    required this.role,
   });
 }

@@ -1,31 +1,48 @@
-import 'package:dartz/dartz.dart';
-import '../../domain/entities/user.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import '../../domain/repositories/user_repository.dart';
-import '../datasources/remote_data_source.dart';
-import '../../core/error/failure.dart';
 
 class UserRepositoryImpl implements UserRepository {
-  final RemoteDataSource remoteDataSource;
-
-  UserRepositoryImpl(this.remoteDataSource);
-
   @override
-  Future<Either<Failure, User>> login(String email, String password) async {
-    try {
-      final user = await remoteDataSource.login(email, password);
-      return Right(user);
-    } catch (e) {
-      return Left(ServerFailure());
+  Future<bool> register(String name, String email, String password, String role) async {
+    final response = await http.post(
+      Uri.parse('http://localhost:3001/user/register'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'name': name,
+        'email': email,
+        'password': password,
+        'role': role,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
     }
   }
 
   @override
-  Future<Either<Failure, User>> register(User user, String password) async {
-    try {
-      final registeredUser = await remoteDataSource.register(user, password);
-      return Right(registeredUser);
-    } catch (e) {
-      return Left(ServerFailure());
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final response = await http.post(
+      Uri.parse('http://localhost:3001/login/auth'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to login');
     }
   }
 }
