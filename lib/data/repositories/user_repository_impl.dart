@@ -5,7 +5,7 @@ import '../../domain/repositories/user_repository.dart';
 
 class UserRepositoryImpl implements UserRepository {
   @override
-  Future<bool> register(String name, String email, String password, String role) async {
+  Future<bool> register(String name, String lastName, String email, String password, String role, String gender, String phone) async {
     final response = await http.post(
       Uri.parse('http://localhost:3001/user/register'),
       headers: <String, String>{
@@ -13,9 +13,12 @@ class UserRepositoryImpl implements UserRepository {
       },
       body: jsonEncode(<String, String>{
         'name': name,
+        'lastName': lastName,
         'email': email,
         'password': password,
         'role': role,
+        'gender': gender,
+        'phone' : phone
       }),
     );
 
