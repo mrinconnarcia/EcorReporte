@@ -57,14 +57,14 @@ class ProfilePage extends StatelessWidget {
                     onPressed: () {},
                     child: Text('Actualizar cuenta'),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF9DE976)),
+                        backgroundColor: Color(0xFF9DE976), foregroundColor: Colors.black),
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {},
                     child: Text('Eliminar cuenta'),
                     style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        ElevatedButton.styleFrom(backgroundColor: Colors.red[400], foregroundColor: Colors.black),
                   ),
                 ],
               ),

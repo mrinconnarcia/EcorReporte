@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import '../bloc/authentication_bloc.dart';
 import '../bloc/authentication_event.dart';
 import '../bloc/authentication_state.dart';
@@ -60,8 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Text(
                         'Iniciar sesión',
-                        style:
-                            TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 30),
@@ -93,9 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscureText
-                                ? Icons.visibility_off
-                                : Icons.visibility),
+                            icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
                             onPressed: () {
                               setState(() {
                                 _obscureText = !_obscureText;

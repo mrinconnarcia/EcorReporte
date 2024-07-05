@@ -42,10 +42,14 @@ class UserRepositoryImpl implements UserRepository {
       }),
     );
 
+    print('Login response: ${response.statusCode} ${response.body}');
+
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to login');
+      print('Login error: ${response.statusCode} ${response.body}');
+      throw Exception('Failed to login: ${response.body}');
+      // throw Exception('Failed to login');
     }
   }
 }

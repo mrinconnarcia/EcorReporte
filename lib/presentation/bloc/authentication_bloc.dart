@@ -31,19 +31,20 @@ class AuthenticationBloc
       }
     } else if (event is LoginEvent) {
       yield AuthenticationLoading();
+      // final result = await register(event.user, event.password);
+      // yield result.fold(
+      //   (failure) => AuthenticationFailure(message: 'Register Failed'),
+      //   (user) => AuthenticationSuccess(user: user),
+      // );
       try {
-        final response =
-            await userRepository.login(event.email, event.password);
+        final response = await userRepository.login(event.email, event.password);
         if (response['status'] == 'success') {
           yield AuthenticationSuccess();
         } else {
-          yield AuthenticationFailure(
-              message:
-                  'Error al iniciar sesión. Por favor, inténtelo de nuevo.');
+          yield AuthenticationFailure(message: 'Error al iniciar sesión. Por favor, inténtelo de nuevo.');
         }
       } catch (error) {
-        yield AuthenticationFailure(
-            message: 'Error al iniciar sesión. Por favor, inténtelo de nuevo.');
+        yield AuthenticationFailure(message: 'Error al iniciar sesión. Por favor, inténtelo de nuevo.');
       }
     }
   }
