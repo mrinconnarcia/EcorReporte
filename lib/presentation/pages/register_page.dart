@@ -43,10 +43,20 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Términos y Condiciones'),
-          content: SingleChildScrollView(
-            child: Text(
-              '''Villazón Rico Leonardo Jesús, con  domicilio en Calle Francisco I Madero No. 55 Despacho 424 4to Piso Col. Centro Delegación  Cuauhtémoc  C.P. 06000 México Ciudad de México. Hace de su conocimiento que los datos personales de usted, que actualmente o en el futuro obren en nuestra base de datos, ya sea por formar parte de nuestro grupo de clientes o ser alguno de nuestros proveedores, serán tratados y/o utilizados por: Villazón Rico Leonardo Jesús, con el propósito de cumplir aquellas obligaciones que se derivan de la relación jurídica existente entre usted como titular de los datos personales y las empresa antes señalada.
+          contentPadding:
+              EdgeInsets.fromLTRB(24.0, 20.0, 24.0, 0.0), // Ajuste de padding
+          title: Container(
+            padding: EdgeInsets.all(20.0), // Espaciado interior para el título
+            child: Text('Términos y Condiciones', textAlign: TextAlign.center),
+          ),
+          content: Container(
+            width: double.maxFinite, // Ancho máximo posible
+            constraints: BoxConstraints(
+                maxHeight:
+                    MediaQuery.of(context).size.height * 0.85), // Máximo alto
+            child: SingleChildScrollView(
+              child: Text(
+                '''Villazón Rico Leonardo Jesús, con  domicilio en Calle Francisco I Madero No. 55 Despacho 424 4to Piso Col. Centro Delegación  Cuauhtémoc  C.P. 06000 México Ciudad de México. Hace de su conocimiento que los datos personales de usted, que actualmente o en el futuro obren en nuestra base de datos, ya sea por formar parte de nuestro grupo de clientes o ser alguno de nuestros proveedores, serán tratados y/o utilizados por: Villazón Rico Leonardo Jesús, con el propósito de cumplir aquellas obligaciones que se derivan de la relación jurídica existente entre usted como titular de los datos personales y las empresa antes señalada.
               Villazón Rico Leonardo Jesús en los  casos de excepción  previsto en el artículo 37 de la Ley Federal de Protección de Datos Personales en Posesión  de Particulares y en los artículos 18 fracción V, 21,22,23 y 24 de la Ley Federal para la Prevención e Identificación de Operaciones con Recursos de Procedencia Ilícita, podrá transferir sus datos personales, toda vez que los productos que Villazón Rico Leonardo Jesús comercializa son  considerados por esta Ley,  como actividades vulnerables y por tanto sujetas a dicha normatividad.
               Los datos que almacenamos en nuestra base de datos serán tratados de conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares y su Reglamento, y la información está garantizada y protegida por medidas de seguridad administrativas, técnicas y físicas, para evitar su daño, pérdida, alteración, destrucción, uso, acceso o divulgación indebida. Para conocer dichos procedimientos se puede poner en  contacto con nosotros cullinans@hotmail.com y 5555120772.
               Su información será utilizada para proporcionarle un  mejor servicio y, en particular por las siguientes razones:
@@ -68,8 +78,10 @@ class _RegisterPageState extends State<RegisterPage> {
               Se entenderá que usted como titular consiente tácitamente el tratamiento de sus datos personales conforme a lo enunciado en el presente aviso de privacidad, cuando habiéndolo puesto a su disposición, no manifieste su oposición. 
               Villazón Rico Leonardo Jesús se reserva el derecho de cambiar, modificar, complementar y/o alterar el presente Aviso, en cualquier momento, en cuyo caso se hará de su conocimiento a través de cualquiera de los medios que establece la legislación en la materia.
               ''',
+              ),
             ),
           ),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -308,7 +320,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         BlocConsumer<AuthenticationBloc, AuthenticationState>(
                           listener: (context, state) {
                             if (state is AuthenticationSuccess) {
-                              Navigator.of(context).pushReplacementNamed('/home-app');
+                              Navigator.of(context)
+                                  .pushReplacementNamed('/home-app');
                             } else if (state is AuthenticationFailure) {
                               setState(() {
                                 _errorMessage = state.message;
@@ -320,7 +333,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               onPressed: () {
                                 if (_formKey.currentState!.validate() &&
                                     _acceptTerms) {
-                                  BlocProvider.of<AuthenticationBloc>(context).add(
+                                  BlocProvider.of<AuthenticationBloc>(context)
+                                      .add(
                                     RegisterEvent(
                                       User(
                                         name: _nameController.text,

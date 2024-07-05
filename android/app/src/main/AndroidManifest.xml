@@ -9,7 +9,8 @@
     <application
         android:label="ecoreporte"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/eco_reporte_logo">
+        <!-- android:networkSecurityConfig="@xml/network_security_config"> -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

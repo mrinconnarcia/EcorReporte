@@ -3,7 +3,7 @@ import 'package:ecoreporte/data/models/info_model.dart';
 import 'package:http/http.dart' as http;
 
 class InfoService {
-  final String apiUrl = 'http://localhost:3005/educational-content/all';
+  final String apiUrl = 'https://gjhmw1vf-3005.use.devtunnels.ms/educational-content/all';
 
   Future<List<InfoModel>> fetchInfo() async {
     final response = await http.get(Uri.parse(apiUrl));

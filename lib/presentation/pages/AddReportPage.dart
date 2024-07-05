@@ -203,6 +203,7 @@ class _AddReportPageState extends State<AddReportPage> {
                       child: Text('Seleccionar archivo'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey,
+                        foregroundColor: Colors.black87,
                       ),
                     ),
                     if (_selectedFile != null)
@@ -227,6 +228,7 @@ class _AddReportPageState extends State<AddReportPage> {
                       child: Text('Enviar'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
                       ),
                     ),
                   ],
