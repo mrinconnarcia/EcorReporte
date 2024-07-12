@@ -4,6 +4,7 @@ import '../bloc/authentication_bloc.dart';
 import '../bloc/authentication_event.dart';
 import '../bloc/authentication_state.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../utils/secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -25,6 +26,11 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isPasswordValid(String password) {
     return password.length >= 6; // You can add more complex validation here
+  }
+
+  void saveToken(String token) async {
+    final storage = SecureStorage();
+    await storage.saveToken(token);
   }
 
   @override

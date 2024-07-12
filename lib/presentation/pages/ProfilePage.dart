@@ -1,93 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/authentication_bloc.dart';
+import '../bloc/authentication_event.dart';
+import '../../data/repositories/user_repository_impl.dart';
+import '../../utils/secure_storage.dart';
 import '../widgets/SharedBottomNavigationBar.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final secureStorage = SecureStorage();
+    final authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            color: Color(0xFF9DE976),
-            padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: secureStorage.getUserData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError || !snapshot.hasData) {
+            return Center(child: Text('No se encontraron datos del usuario'));
+          } else {
+            final userData = snapshot.data!;
+            return Column(
               children: [
-                Row(
-                  children: [
-                    Image.asset('assets/eco_reporte_logo.png', height: 40),
-                    SizedBox(width: 8),
-                    Text(
-                      'EcoReporte',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                Container(
+                  color: Color(0xFF9DE976),
+                  padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset('assets/eco_reporte_logo.png',
+                              height: 40),
+                          SizedBox(width: 8),
+                          Text(
+                            'EcoReporte',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.exit_to_app),
+                        onPressed: () async {
+                          await secureStorage.deleteUserInfo();
+                          authenticationBloc.add(LoggedOut());
+                          Navigator.of(context).pushReplacementNamed('/');
+                        },
+                        tooltip: 'Cerrar sesión',
+                      ),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.exit_to_app),
-                  onPressed: () {
-                    // Aquí puedes agregar lógica adicional para cerrar sesión si es necesario
-                    Navigator.of(context).pushReplacementNamed('/');
-                  },
-                  tooltip: 'Cerrar sesión',
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Hola!',
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text('Bienvenido, ${userData['name']}',
+                            style: TextStyle(fontSize: 18)),
+                        SizedBox(height: 20),
+                        InfoRow(
+                            label: 'Nombre:', value: userData['name'] ?? 'N/A'),
+                        InfoRow(
+                            label: 'Apellidos:',
+                            value: userData['lastName'] ?? 'N/A'),
+                        InfoRow(
+                            label: 'Correo:',
+                            value: userData['email'] ?? 'N/A'),
+                        InfoRow(
+                            label: 'Teléfono:',
+                            value: userData['phone'] ?? 'N/A'),
+                        InfoRow(
+                            label: 'Rol:', value: userData['role'] ?? 'N/A'),
+                        InfoRow(
+                            label: 'Género:',
+                            value: userData['gender'] ?? 'N/A'),
+                        // ... resto de tu UI ...
+
+                        ElevatedButton(
+                          onPressed: () {
+                            // Implementar lógica para actualizar cuenta
+                          },
+                          child: Text('Actualizar cuenta'),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF9DE976),
+                              foregroundColor: Colors.black),
+                        ),
+                        SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Implementar lógica para eliminar cuenta
+                          },
+                          child: Text('Eliminar cuenta'),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red[400],
+                              foregroundColor: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Hola!',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text('Bienvenido, Martín', style: TextStyle(fontSize: 18)),
-                  SizedBox(height: 20),
-                  InfoRow(label: 'Nombre:', value: 'Martin'),
-                  InfoRow(label: 'Apellidos:', value: 'Rincon Narcia'),
-                  InfoRow(label: 'Correo:', value: 'martin@gmail.com'),
-                  InfoRow(label: 'Telefono:', value: '9612851122'),
-                  InfoRow(label: 'Fecha de nacimiento:', value: '12/10/2002'),
-                  InfoRow(label: 'Genero:', value: 'Masculino'),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('Actualizar cuenta'),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF9DE976), foregroundColor: Colors.black),
-                  ),
-                  SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('Eliminar cuenta'),
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.red[400], foregroundColor: Colors.black),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+            );
+          }
+        },
       ),
       bottomNavigationBar: SharedBottomNavigationBar(
         currentIndex: 4,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/home-app');
-          }
-
-          if (index == 1) {
+          } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/info-app');
-          }
-
-          if (index == 2) {
+          } else if (index == 2) {
             Navigator.pushReplacementNamed(context, '/add-report');
-          }
-
-          if (index == 3) {
+          } else if (index == 3) {
             Navigator.pushReplacementNamed(context, '/history');
           }
         },

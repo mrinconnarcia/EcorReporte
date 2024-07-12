@@ -18,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _codeController = TextEditingController();
   String _selectedGender = 'Masculino'; // Default gender
   String _selectedRole = 'usuario'; // Default role
   bool _obscureText = true;
@@ -81,7 +82,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-
           actions: [
             TextButton(
               onPressed: () {
@@ -104,264 +104,297 @@ class _RegisterPageState extends State<RegisterPage> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: FocusScope(
-        child: GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: Center(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 400),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Registro',
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 30),
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            labelText: 'Nombre',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+      body: BlocListener<AuthenticationBloc, AuthenticationState>(
+        listener: (context, state) {
+          if (state is AuthenticationSuccess2) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Registro Exitoso'),
+                  content: Text('¡Te has registrado exitosamente!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pushReplacementNamed('/login');
+                      },
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          } else if (state is AuthenticationFailure) {
+            setState(() {
+              _errorMessage = state.message;
+            });
+          }
+        },
+        child: FocusScope(
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
+            child: Center(
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 400),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Registro',
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su nombre';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _lastNameController,
-                          decoration: InputDecoration(
-                            labelText: 'Apellido',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su apellido';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su email';
-                            }
-                            if (!isEmailValid(value)) {
-                              return 'Por favor ingrese un email válido';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscureText
-                                  ? Icons.visibility_off
-                                  : Icons.visibility),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
-                            ),
-                          ),
-                          obscureText: _obscureText,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su contraseña';
-                            }
-                            if (!isPasswordValid(value)) {
-                              return 'La contraseña debe tener al menos 6 caracteres';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: _phoneController,
-                          decoration: InputDecoration(
-                            labelText: 'Teléfono',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor ingrese su teléfono';
-                            }
-                            if (!isPhoneValid(value)) {
-                              return 'Por favor ingrese un teléfono válido';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        DropdownButtonFormField<String>(
-                          value: _selectedGender,
-                          decoration: InputDecoration(
-                            labelText: 'Género',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedGender = newValue!;
-                            });
-                          },
-                          items: <String>['Masculino', 'Femenino', 'Otro']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor seleccione su género';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        DropdownButtonFormField<String>(
-                          value: _selectedRole,
-                          decoration: InputDecoration(
-                            labelText: 'Rol',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedRole = newValue!;
-                            });
-                          },
-                          items: <String>['usuario', 'admin']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        ),
-                        SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _acceptTerms,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  _acceptTerms = value ?? false;
-                                });
-                              },
-                            ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: _showTermsAndConditions,
-                                child: Text(
-                                  'Acepto los términos y condiciones',
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      color: Colors.blue),
-                                ),
+                          SizedBox(height: 30),
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: 'Nombre',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                          ],
-                        ),
-                        if (!_acceptTerms)
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Debes aceptar los términos y condiciones para registrarte',
-                              style: TextStyle(color: Colors.red),
-                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su nombre';
+                              }
+                              return null;
+                            },
                           ),
-                        if (_errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: _lastNameController,
+                            decoration: InputDecoration(
+                              labelText: 'Apellido',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su apellido';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Correo electrónico',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su correo electrónico';
+                              } else if (!isEmailValid(value)) {
+                                return 'Por favor ingrese un correo electrónico válido';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              labelText: 'Contraseña',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscureText
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureText = !_obscureText;
+                                  });
+                                },
+                              ),
+                            ),
+                            obscureText: _obscureText,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su contraseña';
+                              } else if (!isPasswordValid(value)) {
+                                return 'La contraseña debe tener al menos 6 caracteres';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: _phoneController,
+                            decoration: InputDecoration(
+                              labelText: 'Número de teléfono',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor ingrese su número de teléfono';
+                              } else if (!isPhoneValid(value)) {
+                                return 'Por favor ingrese un número de teléfono válido';
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.phone,
+                          ),
+                          SizedBox(height: 20),
+                          DropdownButtonFormField<String>(
+                            value: _selectedGender,
+                            decoration: InputDecoration(
+                              labelText: 'Género',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            items:
+                                ['Masculino', 'Femenino', 'Otro'].map((gender) {
+                              return DropdownMenuItem<String>(
+                                value: gender,
+                                child: Text(gender),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGender = value!;
+                              });
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          DropdownButtonFormField<String>(
+                            value: _selectedRole,
+                            decoration: InputDecoration(
+                              labelText: 'Rol',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            items: ['usuario', 'admin'].map((role) {
+                              return DropdownMenuItem<String>(
+                                value: role,
+                                child: Text(role),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedRole = value!;
+                                if (_selectedRole == 'admin') {
+                                  _codeController.text = '';
+                                }
+                              });
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: _codeController,
+                            enabled: _selectedRole == 'usuario',
+                            decoration: InputDecoration(
+                              labelText: 'Código',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (_selectedRole == 'usuario' &&
+                                  (value == null || value.isEmpty)) {
+                                return 'Por favor ingrese su código';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Checkbox(
+                                value: _acceptTerms,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _acceptTerms = value!;
+                                  });
+                                },
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _showTermsAndConditions();
+                                },
+                                child: Text(
+                                  'Acepto los Términos y Condiciones',
+                                  style: TextStyle(
+                                    decoration: TextDecoration.underline,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          if (_errorMessage != null)
+                            Text(
                               _errorMessage!,
                               style: TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                          SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                if (!_acceptTerms) {
+                                  setState(() {
+                                    _errorMessage =
+                                        'Debe aceptar los términos y condiciones';
+                                  });
+                                  return;
+                                }
+                                final user = User(
+                                  name: _nameController.text,
+                                  lastName: _lastNameController.text,
+                                  email: _emailController.text,
+                                  phone: _phoneController.text,
+                                  gender: _selectedGender,
+                                  role: _selectedRole,
+                                );
+                                BlocProvider.of<AuthenticationBloc>(context)
+                                    .add(RegisterEvent(
+                                        user,
+                                        _codeController.text,
+                                        _codeController.text));
+                              }
+                            },
+                            child: Text('Registrarse'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              minimumSize: Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
-                        SizedBox(height: 20),
-                        BlocConsumer<AuthenticationBloc, AuthenticationState>(
-                          listener: (context, state) {
-                            if (state is AuthenticationSuccess) {
+                          SizedBox(height: 20),
+                          TextButton(
+                            onPressed: () {
                               Navigator.of(context)
-                                  .pushReplacementNamed('/home-app');
-                            } else if (state is AuthenticationFailure) {
-                              setState(() {
-                                _errorMessage = state.message;
-                              });
-                            }
-                          },
-                          builder: (context, state) {
-                            return ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate() &&
-                                    _acceptTerms) {
-                                  BlocProvider.of<AuthenticationBloc>(context)
-                                      .add(
-                                    RegisterEvent(
-                                      User(
-                                        name: _nameController.text,
-                                        lastName: _lastNameController.text,
-                                        email: _emailController.text,
-                                        role: _selectedRole,
-                                        gender: _selectedGender,
-                                        phone: _phoneController.text,
-                                      ),
-                                      _passwordController.text,
-                                    ),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                minimumSize: Size(double.infinity, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: Text('Registrar'),
-                            );
-                          },
-                        ),
-                      ],
+                                  .pushReplacementNamed('/login');
+                            },
+                            child: Text('¿Ya tienes una cuenta? Inicia sesión', style: TextStyle(color: Colors.green)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
