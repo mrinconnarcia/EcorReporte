@@ -10,7 +10,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<bool> register(String name, String lastName, String email, String password, String role, String gender, String phone, String code) async {
     final response = await http.post(
       // Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/register'),
-      Uri.parse('http://localhost:3001/user/register'),
+      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/register'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -35,7 +35,7 @@ class UserRepositoryImpl implements UserRepository {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://localhost:3001/login/auth'),
+      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/login/auth'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -65,7 +65,7 @@ class UserRepositoryImpl implements UserRepository {
     }
 
     final response = await http.get(
-      Uri.parse('http://localhost:3001/user/profile'),
+      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/profile'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
