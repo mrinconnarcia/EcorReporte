@@ -371,7 +371,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 BlocProvider.of<AuthenticationBloc>(context)
                                     .add(RegisterEvent(
                                         user,
-                                        _codeController.text,
+                                        _passwordController.text,
                                         _codeController.text));
                               }
                             },
