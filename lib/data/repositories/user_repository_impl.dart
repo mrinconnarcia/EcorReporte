@@ -78,4 +78,48 @@ class UserRepositoryImpl implements UserRepository {
       throw Exception('Failed to load user data');
     }
   }
+
+  Future<bool> updateUser(Map<String, dynamic> userData) async {
+    String? token = await secureStorage.getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.put(
+      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/update-email/${userData['email']}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(userData),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> deleteUser(String email) async {
+    String? token = await secureStorage.getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.delete(
+      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/delete-email/$email'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(<String, String>{ 'email': email }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }

@@ -1,31 +1,35 @@
-import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
 class SecureStorage {
-  final storage = FlutterSecureStorage();
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   Future<void> saveToken(String token) async {
-    await storage.write(key: 'auth_token', value: token);
-  }
-
-  Future<void> saveUserData(Map<String, dynamic> userData) async {
-    await storage.write(key: 'user_data', value: jsonEncode(userData));
+    await _storage.write(key: 'token', value: token);
   }
 
   Future<String?> getToken() async {
-    return await storage.read(key: 'auth_token');
+    return await _storage.read(key: 'token');
+  }
+
+  Future<void> deleteToken() async {
+    await _storage.delete(key: 'token');
+  }
+
+  Future<void> saveUserData(Map<String, dynamic> userData) async {
+    await _storage.write(key: 'user_data', value: jsonEncode(userData));
   }
 
   Future<Map<String, dynamic>?> getUserData() async {
-    final userDataString = await storage.read(key: 'user_data');
-    if (userDataString != null) {
-      return jsonDecode(userDataString);
+    String? userDataString = await _storage.read(key: 'user_data');
+    if (userDataString == null) {
+      return null;
     }
-    return null;
+    return jsonDecode(userDataString);
   }
 
   Future<void> deleteUserInfo() async {
-    await storage.delete(key: 'auth_token');
-    await storage.delete(key: 'user_data');
+    await _storage.delete(key: 'user_data');
+    await _storage.delete(key: 'token');
   }
 }

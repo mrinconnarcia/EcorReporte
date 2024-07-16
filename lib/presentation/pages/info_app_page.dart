@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/info_model.dart';
-import '../../data/services/info_service.dart';
+import '../../data/repositories/info_repository_impl.dart';
 import '../widgets/SharedBottomNavigationBar.dart';
 
 class InfoAppPage extends StatefulWidget {

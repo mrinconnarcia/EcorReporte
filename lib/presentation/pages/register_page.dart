@@ -19,8 +19,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
-  String _selectedGender = 'Masculino'; // Default gender
-  String _selectedRole = 'usuario'; // Default role
+  String _selectedGender = 'Masculino'; 
+  String _selectedRole = 'usuario'; 
   bool _obscureText = true;
   bool _acceptTerms = false;
   String? _errorMessage;

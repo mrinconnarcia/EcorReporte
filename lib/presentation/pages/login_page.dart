@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   bool isPasswordValid(String password) {
-    return password.length >= 6; // You can add more complex validation here
+    return password.length >= 6; 
   }
 
   void saveToken(String token) async {
