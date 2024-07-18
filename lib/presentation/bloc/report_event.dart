@@ -13,3 +13,4 @@ class CreateReportEvent extends ReportEvent {
   @override
   List<Object> get props => [report];
 }
+
