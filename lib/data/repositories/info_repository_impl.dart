@@ -7,56 +7,77 @@ class InfoRepositoryImpl {
 
   InfoRepositoryImpl();
 
-  Future<List<InfoModel>> getAllContent() async {
-    final response = await http.get(Uri.parse('$baseUrl/educational-content/all'));
+  Future<List<InfoModel>> getAllContent(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/educational-content/all'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => InfoModel.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load content');
+      throw Exception('Failed to load content: ${response.reasonPhrase}');
     }
   }
 
-  Future<InfoModel> getContentById(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/educational-content/$id'));
+  Future<InfoModel> getContentById(int id, String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/educational-content/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       return InfoModel.fromJson(json.decode(response.body));
     } else {
-      throw Exception('Failed to load content');
+      throw Exception('Failed to load content: ${response.reasonPhrase}');
     }
   }
 
-  Future<void> createContent(InfoModel content) async {
+  Future<void> createContent(InfoModel content, String token) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/content'),
-      headers: {'Content-Type': 'application/json'},
+      Uri.parse('$baseUrl/educational-content'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
       body: json.encode(content.toJson()),
     );
 
     if (response.statusCode != 201) {
-      throw Exception('Failed to create content');
+      throw Exception('Failed to create content: ${response.reasonPhrase}');
     }
   }
 
-  Future<void> updateContent(int id, InfoModel content) async {
+  Future<void> updateContent(int id, InfoModel content, String token) async {
     final response = await http.put(
       Uri.parse('$baseUrl/educational-content/$id'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
       body: json.encode(content.toJson()),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to update content');
+      throw Exception('Failed to update content: ${response.reasonPhrase}');
     }
   }
 
-  Future<void> deleteContent(int id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/educational-content/$id'));
+  Future<void> deleteContent(int id, String token) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/educational-content/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
 
-    if (response.statusCode != 204) {
-      throw Exception('Failed to delete content');
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete content: ${response.reasonPhrase}');
     }
   }
 }

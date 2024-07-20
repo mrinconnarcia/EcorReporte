@@ -1,38 +1,57 @@
-// import 'package:ecoreporte/core/network/network_info.dart';
-// import 'package:ecoreporte/data/datasources/report_local_data_source.dart';
-// import 'package:ecoreporte/data/datasources/report_remote_data_source.dart';
-// import 'package:ecoreporte/data/models/report_model.dart';
-// import 'package:ecoreporte/domain/entities/report.dart';
-// import 'package:ecoreporte/domain/repositories/report_repository.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../domain/entities/report.dart';
 
-// class ReportRepositoryImpl implements ReportRepository {
-//   final ReportRemoteDataSource remoteDataSource;
-//   final ReportLocalDataSource localDataSource;
-//   final NetworkInfo networkInfo;
+class ReportRepositoryImpl {
+  final String apiUrl =
+      "https://t2zd2jpn-5000.usw3.devtunnels.ms/reports";
 
-//   ReportRepositoryImpl({
-//     required this.remoteDataSource,
-//     required this.localDataSource,
-//     required this.networkInfo,
-//   });
+  Future<void> createReport(
+      Map<String, dynamic> reportData, String filePath) async {
+    var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+    request.fields.addAll(
+        reportData.map((key, value) => MapEntry(key, value.toString())));
+    request.files.add(await http.MultipartFile.fromPath('image', filePath));
 
-//   @override
-//   Future<void> createReport(Report report) async {
-//     if (await networkInfo.isConnected) {
-//       await remoteDataSource.createReport(report as ReportModel);
-//     } else {
-//       await localDataSource.cacheReport(report as ReportModel);
-//     }
-//   }
+    var response = await request.send();
+    if (response.statusCode != 200) {
+      throw Exception('Error al crear el reporte');
+    }
+  }
 
-//   @override
-//   Future<void> syncReports() async {
-//     if (await networkInfo.isConnected) {
-//       final reports = await localDataSource.getLastReports();
-//       for (final report in reports) {
-//         await remoteDataSource.createReport(report);
-//       }
-//       localDataSource.clearCachedReports();
-//     }
-//   }
-// }
+  Future<List<Report>> fetchReports(String token) async {
+    final response = await http.get(Uri.parse(apiUrl), headers: {
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((report) => Report.fromJson(report)).toList();
+    } else {
+      throw Exception('Error al cargar los reportes');
+    }
+  }
+
+  Future<void> updateReport(Report report) async {
+    final response = await http.put(
+      Uri.parse('$apiUrl/reports/${report.id}'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(report.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar el reporte');
+    }
+  }
+
+  Future<void> deleteReport(int id) async {
+    final response = await http.delete(Uri.parse('$apiUrl/$id'));
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al eliminar el reporte');
+    }
+  }
+}

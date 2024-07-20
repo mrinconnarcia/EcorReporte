@@ -27,7 +27,7 @@ class AuthenticationBloc
             event.user.role,
             event.user.gender,
             event.user.phone,
-            event.code);
+            event.user.code);
         // String token = success['token'];
         // await secureStorage.saveToken(token);
         yield AuthenticationSuccess2();

@@ -1,22 +1,39 @@
 import 'package:flutter/material.dart';
 import '../../data/models/info_model.dart';
 import '../../data/repositories/info_repository_impl.dart';
+import 'package:provider/provider.dart';
+import '../../utils/secure_storage.dart'; // Asegúrate de importar SecureStorage
 
 class UpdateContentModal extends StatefulWidget {
+  final InfoModel content;
+
+  UpdateContentModal({required this.content});
+
   @override
   _UpdateContentModalState createState() => _UpdateContentModalState();
 }
 
 class _UpdateContentModalState extends State<UpdateContentModal> {
   final _formKey = GlobalKey<FormState>();
-  final _idController = TextEditingController();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _contentController = TextEditingController();
-  final InfoRepositoryImpl repository = InfoRepositoryImpl();
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _contentController;
+  late TextEditingController _imageUrlController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.content.title);
+    _descriptionController = TextEditingController(text: widget.content.description);
+    _contentController = TextEditingController(text: widget.content.content);
+    _imageUrlController = TextEditingController(text: widget.content.imageUrl);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final repository = Provider.of<InfoRepositoryImpl>(context);
+    final secureStorage = SecureStorage();
+
     return AlertDialog(
       title: Text('Modificar Contenido'),
       content: Form(
@@ -24,16 +41,6 @@ class _UpdateContentModalState extends State<UpdateContentModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextFormField(
-              controller: _idController,
-              decoration: InputDecoration(labelText: 'ID del Contenido'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese el ID del contenido';
-                }
-                return null;
-              },
-            ),
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Título'),
@@ -64,24 +71,41 @@ class _UpdateContentModalState extends State<UpdateContentModal> {
                 return null;
               },
             ),
+            TextFormField(
+              controller: _imageUrlController,
+              decoration: InputDecoration(labelText: 'URL de la Imagen'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese la URL de la imagen';
+                }
+                return null;
+              },
+            ),
           ],
         ),
       ),
       actions: [
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              final content = InfoModel(
-                id: int.parse(_idController.text),
+              final updatedContent = InfoModel(
+                id: widget.content.id,
                 title: _titleController.text,
                 description: _descriptionController.text,
                 content: _contentController.text,
+                imageUrl: _imageUrlController.text,
               );
-              repository.updateContent(content.id, content).then((_) {
-                Navigator.of(context).pop();
-              }).catchError((error) {
-                // Manejar el error
-              });
+
+              final token = await secureStorage.getToken();
+              if (token != null) {
+                repository.updateContent(updatedContent.id, updatedContent, token).then((_) {
+                  Navigator.of(context).pop();
+                }).catchError((error) {
+                  // Manejar el error
+                });
+              } else {
+                // Manejar la ausencia del token
+              }
             }
           },
           child: Text('Modificar'),

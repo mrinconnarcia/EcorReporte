@@ -1,3 +1,4 @@
+import 'package:ecoreporte/presentation/widgets/CreateCommunityModal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/authentication_bloc.dart';
@@ -151,6 +152,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                 backgroundColor: Color(0xFF9DE976),
                                 foregroundColor: Colors.black),
                           ),
+                          SizedBox(height: 10),
+                          if (userData['role'] == 'admin') // Mostrar solo a administradores
+                            ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => CreateCommunityModal(),
+                                );
+                              },
+                              child: Text('Crear Comunidad'),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white),
+                            ),
                           SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: () async {

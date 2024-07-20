@@ -5,9 +5,8 @@ abstract class AuthenticationEvent {}
 class RegisterEvent extends AuthenticationEvent {
   final User user;
   final String password;
-  final String code;
 
-  RegisterEvent(this.user, this.password, this.code);
+  RegisterEvent(this.user, this.password);
 }
 
 class LoginEvent extends AuthenticationEvent {

@@ -5,6 +5,7 @@ class User {
   final String role;
   final String gender;
   final String phone;
+  final String code;
 
   User({
     required this.name,
@@ -13,5 +14,6 @@ class User {
     required this.role,
     required this.gender,
     required this.phone,
+    required this.code	
   });
 }

@@ -19,8 +19,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
-  String _selectedGender = 'Masculino'; 
-  String _selectedRole = 'usuario'; 
+  String _selectedGender = 'Masculino';
+  String _selectedRole = 'usuario';
   bool _obscureText = true;
   bool _acceptTerms = false;
   String? _errorMessage;
@@ -367,12 +367,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                   phone: _phoneController.text,
                                   gender: _selectedGender,
                                   role: _selectedRole,
+                                  code: _codeController.text,
                                 );
                                 BlocProvider.of<AuthenticationBloc>(context)
                                     .add(RegisterEvent(
-                                        user,
-                                        _passwordController.text,
-                                        _codeController.text));
+                                        user, _passwordController.text));
                               }
                             },
                             child: Text('Registrarse'),
@@ -391,7 +390,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               Navigator.of(context)
                                   .pushReplacementNamed('/login');
                             },
-                            child: Text('¿Ya tienes una cuenta? Inicia sesión', style: TextStyle(color: Colors.green)),
+                            child: Text('¿Ya tienes una cuenta? Inicia sesión',
+                                style: TextStyle(color: Colors.green)),
                           ),
                         ],
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../data/models/info_model.dart';
 import '../../data/repositories/info_repository_impl.dart';
+import 'package:provider/provider.dart';
+import '../../utils/secure_storage.dart'; // Asegúrate de importar SecureStorage
 
 class CreateContentModal extends StatefulWidget {
   @override
@@ -12,10 +14,13 @@ class _CreateContentModalState extends State<CreateContentModal> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _contentController = TextEditingController();
-  final InfoRepositoryImpl repository = InfoRepositoryImpl();
+  final _imageUrlController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final repository = Provider.of<InfoRepositoryImpl>(context);
+    final secureStorage = SecureStorage();
+
     return AlertDialog(
       title: Text('Crear Contenido'),
       content: Form(
@@ -53,24 +58,41 @@ class _CreateContentModalState extends State<CreateContentModal> {
                 return null;
               },
             ),
+            TextFormField(
+              controller: _imageUrlController,
+              decoration: InputDecoration(labelText: 'URL de la Imagen'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese la URL de la imagen';
+                }
+                return null;
+              },
+            ),
           ],
         ),
       ),
       actions: [
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
               final content = InfoModel(
-                id: 0,
+                id: 0, // Proporciona un ID temporal si es necesario
                 title: _titleController.text,
                 description: _descriptionController.text,
                 content: _contentController.text,
+                imageUrl: _imageUrlController.text,
               );
-              repository.createContent(content).then((_) {
-                Navigator.of(context).pop();
-              }).catchError((error) {
-                // Manejar el error
-              });
+
+              final token = await secureStorage.getToken();
+              if (token != null) {
+                repository.createContent(content, token).then((_) {
+                  Navigator.of(context).pop();
+                }).catchError((error) {
+                  // Manejar el error
+                });
+              } else {
+                // Manejar la ausencia del token
+              }
             }
           },
           child: Text('Crear'),
