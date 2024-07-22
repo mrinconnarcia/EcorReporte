@@ -1,83 +1,68 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:ecoreporte/domain/entities/report.dart';
 import 'package:ecoreporte/domain/entities/report_summary.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../../utils/secure_storage.dart';
 
 class ReportRepositoryImpl {
   final String initialApiUrl = "http://54.225.155.228:3001/api/reporting/reports";
-  final SecureStorage secureStorage = SecureStorage(); // Añadir esto para acceder al token
+  final Dio _dio = Dio();
 
-  Future<void> createReport(Map<String, dynamic> reportData, String filePath) async {
-  Uri uri = Uri.parse(initialApiUrl);
-  var request = http.MultipartRequest('POST', uri);
+ Future<void> createReport(Map<String, String> reportData, String filePath, String token) async {
+  final formData = FormData.fromMap({
+    ...reportData,
+    'image': await MultipartFile.fromFile(filePath),
+  });
 
-  // Add form fields
-  request.fields['titulo_reporte'] = reportData['TITLE'];
-  request.fields['tipo_reporte'] = reportData['TYPE'];
-  request.fields['descripcion'] = reportData['DESCRIPTION'];
-  request.fields['colonia'] = reportData['PLACE'];
-  request.fields['codigo_postal'] = reportData['POSTAL_CODE'];
-  request.fields['nombres'] = reportData['NAMES'];
-  request.fields['apellidos'] = reportData['LASTNAME'];
-  request.fields['telefono'] = reportData['PHONE'];
-  request.fields['correo'] = reportData['EMAIL'];
+  final response = await _dio.post(
+    '$initialApiUrl/create',  // Verifica que esta URL sea correcta
+    data: formData,
+    options: Options(
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': 'Bearer $token',
+      },
+    ),
+  );
 
-  // Add the image file
-  request.files.add(await http.MultipartFile.fromPath('image', filePath));
-
-  // Get the authentication token
-  String? token = await secureStorage.getToken();
-  if (token == null) {
-    throw Exception('Token not found');
-  }
-
-  // Add headers
-  request.headers['Authorization'] = 'Bearer $token';
-  request.headers['Content-Type'] = 'multipart/form-data';
-
-  try {
-    var response = await request.send();
-    var client = http.Client();
-
-    // Handle redirects
-    while (response.isRedirect) {
-      final redirectUrl = response.headers['location'];
-      if (redirectUrl == null) {
-        throw Exception('Failed to get redirect URL');
-      }
-      uri = Uri.parse(redirectUrl);
-      request = http.MultipartRequest('POST', uri)
-        ..fields.addAll(request.fields)
-        ..files.addAll(request.files)
-        ..headers.addAll(request.headers);
-      response = await client.send(request);
-    }
-
-    var responseBody = await response.stream.bytesToString();
-    print('Final URL: $uri');
-    print('Response status: ${response.statusCode}');
-    print('Response body: $responseBody');
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print('Report created successfully');
-    } else {
-      throw Exception('Failed to create report: ${response.statusCode}');
-    }
-  } catch (e) {
-    print('Error creating report: $e');
-    throw Exception('Error creating report: $e');
+  if (response.statusCode != 201) {
+    throw Exception('Failed to create report: ${response.statusMessage}');
   }
 }
 
+  Future<String> getRoleFromToken(String token) async {
+    final payload = _decodeToken(token);
+    if (payload['role'] != null) {
+      return payload['role'];
+    } else {
+      throw Exception('Role not found in token');
+    }
+  }
+
+  Map<String, dynamic> _decodeToken(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      throw Exception('Invalid token');
+    }
+
+    final payload = json.decode(
+      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+    );
+    return payload;
+  }
   Future<List<ReportSummary>> fetchReports(String token) async {
-    final response = await http.get(Uri.parse('$initialApiUrl/pdf-list'), headers: {
-      'Authorization': 'Bearer $token',
-    });
+    final response = await _dio.get(
+      '$initialApiUrl/pdf-list',
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
 
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
+      List<dynamic> data = response.data;
       return data.map((report) => ReportSummary.fromJson(report)).toList();
     } else {
       throw Exception('Error al cargar los reportes');
@@ -85,12 +70,14 @@ class ReportRepositoryImpl {
   }
 
   Future<void> updateReport(Report report) async {
-    final response = await http.put(
-      Uri.parse('$initialApiUrl/${report.id}'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(report.toJson()),
+    final response = await _dio.put(
+      '$initialApiUrl/${report.id}',
+      data: report.toJson(),
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ),
     );
 
     if (response.statusCode != 200) {
@@ -99,7 +86,7 @@ class ReportRepositoryImpl {
   }
 
   Future<void> deleteReport(int id) async {
-    final response = await http.delete(Uri.parse('$initialApiUrl/$id'));
+    final response = await _dio.delete('$initialApiUrl/$id');
 
     if (response.statusCode != 200) {
       throw Exception('Error al eliminar el reporte');

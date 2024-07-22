@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:ecoreporte/data/repositories/report_repository_impl.dart';
-import 'package:ecoreporte/presentation/widgets/SharedBottomNavigationBar.dart';
 import 'package:ecoreporte/utils/secure_storage.dart';
+import '../widgets/SharedBottomNavigationBar.dart';
 
 class AddReportPage extends StatefulWidget {
   @override
@@ -25,7 +23,7 @@ class _AddReportPageState extends State<AddReportPage> {
   final _emailController = TextEditingController();
 
   final SecureStorage secureStorage = SecureStorage();
-
+  final ReportRepositoryImpl reportRepository = ReportRepositoryImpl();
   File? _selectedFile;
   final _picker = ImagePicker();
 
@@ -124,7 +122,7 @@ class _AddReportPageState extends State<AddReportPage> {
                           DropdownMenuItem(value: 'contaminacion_agua', child: Text('Contaminación del Agua')),
                           DropdownMenuItem(value: 'contaminacion_aire', child: Text('Contaminación del Aire')),
                           DropdownMenuItem(value: 'residuos_solidos', child: Text('Basura')),
-                          DropdownMenuItem(value: 'Plantas y/o animales', child: Text('Plantas y/o animales')),
+                          DropdownMenuItem(value: 'plantas_animales', child: Text('Plantas y/o animales')),
                         ],
                         onChanged: (value) {
                           _typeController.text = value ?? '';
@@ -216,29 +214,25 @@ class _AddReportPageState extends State<AddReportPage> {
                         readOnly: true,
                       ),
                       SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: _selectFile,
-                        icon: Icon(Icons.camera_alt),
-                        label: Text('Seleccionar imagen'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[300],
-                          foregroundColor: Colors.black,
-                          minimumSize: Size(double.infinity, 50),
-                        ),
-                      ),
                       if (_selectedFile != null)
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Image.file(_selectedFile!, height: 100),
+                        Image.file(
+                          _selectedFile!,
+                          width: 100,
+                          height: 100,
                         ),
-                      SizedBox(height: 24),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _selectFile,
+                        child: Text('Seleccionar Imagen'),
+                      ),
+                      SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            if (_selectedFile != null) {
-                              try {
-                                await Provider.of<ReportRepositoryImpl>(context, listen: false)
-                                    .createReport({
+                          if (_formKey.currentState?.validate() ?? false) {
+                            try {
+                              final token = await secureStorage.getToken();
+                              if (token != null) {
+                                final reportData = {
                                   'TITLE': _titleController.text,
                                   'TYPE': _typeController.text,
                                   'DESCRIPTION': _descriptionController.text,
@@ -248,30 +242,32 @@ class _AddReportPageState extends State<AddReportPage> {
                                   'LASTNAME': _lastNameController.text,
                                   'PHONE': _phoneController.text,
                                   'EMAIL': _emailController.text,
-                                }, _selectedFile!.path);
+                                };
 
+                                if (_selectedFile != null) {
+                                  await reportRepository.createReport(reportData, _selectedFile!.path, token);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Reporte creado exitosamente')),
+                                  );
+                                  Navigator.of(context).pop();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Seleccione una imagen')),
+                                  );
+                                }
+                              } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Reporte creado exitosamente')),
-                                );
-                                Navigator.pop(context);
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error al crear el reporte: $e')),
+                                  SnackBar(content: Text('No se encontró el token')),
                                 );
                               }
-                            } else {
+                            } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Por favor seleccione una imagen')),
+                                SnackBar(content: Text('Error al crear el reporte: $e')),
                               );
                             }
                           }
                         },
-                        child: Text('Enviar Reporte'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          minimumSize: Size(double.infinity, 50),
-                        ),
+                        child: Text('Crear Reporte'),
                       ),
                     ],
                   ),
@@ -286,14 +282,13 @@ class _AddReportPageState extends State<AddReportPage> {
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/home-app');
-          }
-          if (index == 1) {
+          } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/info-app');
-          }
-          if (index == 3) {
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/add-report');
+          } else if (index == 3) {
             Navigator.pushReplacementNamed(context, '/history');
-          }
-          if (index == 4) {
+          } else if (index == 4) {
             Navigator.pushReplacementNamed(context, '/profile');
           }
         },

@@ -1,5 +1,8 @@
-import 'package:ecoreporte/domain/entities/info.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:ecoreporte/domain/entities/info.dart';
 import 'package:ecoreporte/data/repositories/info_repository_impl.dart';
 import 'package:ecoreporte/utils/secure_storage.dart';
 import '../widgets/SharedBottomNavigationBar.dart';
@@ -13,6 +16,7 @@ class _InfoAppPageState extends State<InfoAppPage> {
   final InfoRepositoryImpl infoRepository = InfoRepositoryImpl();
   final SecureStorage secureStorage = SecureStorage();
   String? userRole;
+  File? _selectedImage;
 
   @override
   void initState() {
@@ -146,10 +150,39 @@ class _InfoAppPageState extends State<InfoAppPage> {
                   itemBuilder: (context, index) {
                     final content = snapshot.data![index];
                     return Card(
-                      child: ListTile(
-                        title: Text(content.title),
-                        subtitle: Text(content.description),
-                        onTap: () => _showContentDetails(context, content),
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            content.imageUrl.isNotEmpty
+                                ? Image.network(
+                                    content.imageUrl,
+                                    width: double.infinity,
+                                    height: 200,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    height: 200,
+                                    color: Colors.grey[300],
+                                    child: Icon(Icons.image, size: 100),
+                                  ),
+                            SizedBox(height: 8),
+                            Text(
+                              content.title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(content.description),
+                            SizedBox(height: 8),
+                            Text(content.content),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -166,7 +199,6 @@ class _InfoAppPageState extends State<InfoAppPage> {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final contentController = TextEditingController();
-    final imageUrlController = TextEditingController();
     final codeController = TextEditingController();
 
     showDialog(
@@ -190,9 +222,15 @@ class _InfoAppPageState extends State<InfoAppPage> {
                   decoration: InputDecoration(labelText: 'Contenido'),
                   maxLines: 3,
                 ),
-                TextField(
-                  controller: imageUrlController,
-                  decoration: InputDecoration(labelText: 'URL de la imagen'),
+                if (_selectedImage != null)
+                  Image.file(
+                    _selectedImage!,
+                    width: 100,
+                    height: 100,
+                  ),
+                TextButton(
+                  child: Text('Seleccionar Imagen'),
+                  onPressed: () => _pickImage(),
                 ),
                 TextField(
                   controller: codeController,
@@ -209,21 +247,27 @@ class _InfoAppPageState extends State<InfoAppPage> {
             TextButton(
               child: Text('Crear'),
               onPressed: () async {
-                final newContent = Info(
-                  id: 0, // El ID será asignado por el servidor
-                  title: titleController.text,
-                  description: descriptionController.text,
-                  content: contentController.text,
-                  imageUrl: imageUrlController.text,
-                  code: codeController.text,
-                );
-                try {
-                  await infoRepository.createContent(newContent, token);
-                  Navigator.of(context).pop();
-                  setState(() {}); // Actualizar la lista
-                } catch (e) {
+                if (_selectedImage != null) {
+                  try {
+                    final formData = FormData.fromMap({
+                      'title': titleController.text,
+                      'description': descriptionController.text,
+                      'content': contentController.text,
+                      'code': codeController.text,
+                      'image': await MultipartFile.fromFile(_selectedImage!.path),
+                    });
+
+                    await infoRepository.createContent(formData, token);
+                    Navigator.of(context).pop();
+                    setState(() {}); // Actualizar la lista
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al crear el contenido: $e')),
+                    );
+                  }
+                } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error al crear el contenido: $e')),
+                    SnackBar(content: Text('Seleccione una imagen')),
                   );
                 }
               },
@@ -232,6 +276,15 @@ class _InfoAppPageState extends State<InfoAppPage> {
         );
       },
     );
+  }
+
+  Future<void> _pickImage() async {
+    final pickedImage = await ImagePicker().getImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _selectedImage = File(pickedImage.path);
+      });
+    }
   }
 
   void _showContentDetails(BuildContext context, Info content) {
@@ -246,9 +299,13 @@ class _InfoAppPageState extends State<InfoAppPage> {
               children: [
                 Text(content.description),
                 SizedBox(height: 8),
-                Image.network(content.imageUrl),
+                content.imageUrl.isNotEmpty
+                    ? Image.network(content.imageUrl)
+                    : Icon(Icons.image, size: 100),
                 SizedBox(height: 8),
                 Text(content.content),
+                SizedBox(height: 8),
+                Text('Código: ${content.code}'),
               ],
             ),
           ),
