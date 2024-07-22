@@ -88,24 +88,24 @@ class _UpdateContentModalState extends State<UpdateContentModal> {
         ElevatedButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              final updatedContent = Info(
-                id: widget.content.id,
-                title: _titleController.text,
-                description: _descriptionController.text,
-                content: _contentController.text,
-                imageUrl: _imageUrlController.text,
-              );
+              // final updatedContent = Info(
+              //   id: widget.content.id,
+              //   title: _titleController.text,
+              //   description: _descriptionController.text,
+              //   content: _contentController.text,
+              //   imageUrl: _imageUrlController.text,
+              // );
 
-              final token = await secureStorage.getToken();
-              if (token != null) {
-                repository.updateContent(updatedContent.id, updatedContent, token).then((_) {
-                  Navigator.of(context).pop();
-                }).catchError((error) {
-                  // Manejar el error
-                });
-              } else {
-                // Manejar la ausencia del token
-              }
+              // final token = await secureStorage.getToken();
+              // if (token != null) {
+              //   repository.updateContent(updatedContent.id, updatedContent, token).then((_) {
+              //     Navigator.of(context).pop();
+              //   }).catchError((error) {
+              //     // Manejar el error
+              //   });
+              // } else {
+              //   // Manejar la ausencia del token
+              // }
             }
           },
           child: Text('Modificar'),

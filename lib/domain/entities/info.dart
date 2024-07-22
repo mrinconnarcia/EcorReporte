@@ -4,6 +4,7 @@ class Info {
   final String description;
   final String content;
   final String imageUrl;
+  final String code;
 
   Info({
     required this.id,
@@ -11,6 +12,7 @@ class Info {
     required this.description,
     required this.content,
     required this.imageUrl,
+    required this.code,
   });
 
   factory Info.fromJson(Map<String, dynamic> json) {
@@ -20,16 +22,17 @@ class Info {
       description: json['description'],
       content: json['content'],
       imageUrl: json['imageUrl'],
+      code: json['code'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
       'description': description,
       'content': content,
       'imageUrl': imageUrl,
+      'code': code,
     };
   }
 }

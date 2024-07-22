@@ -39,6 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _loadUserData() async {
     final userData = await secureStorage.getUserData();
+    print('Datos del usuario cargados: $userData'); // Debugging
     setState(() {
       nameController.text = userData?['name'] ?? '';
       lastNameController.text = userData?['lastName'] ?? '';
@@ -129,15 +130,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                   'role': roleController.text,
                                   'gender': genderController.text,
                                 };
+
                                 bool success = await userRepository
                                     .updateUser(updatedUserData);
                                 if (success) {
+                                  // Guardar los datos actualizados en el almacenamiento seguro
+                                  await secureStorage
+                                      .saveUserData(updatedUserData);
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         content: Text(
                                             'Cuenta actualizada exitosamente')),
                                   );
-                                  _loadUserData(); // Reload the updated user data
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(

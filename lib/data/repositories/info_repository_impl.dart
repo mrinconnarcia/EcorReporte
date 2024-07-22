@@ -5,34 +5,15 @@ import '../../domain/entities/info.dart';
 class InfoRepositoryImpl {
   final String baseUrl = 'http://54.225.155.228:3001/api/education/educational';
 
-  InfoRepositoryImpl();
-
   Future<List<Info>> getAllContent(String token) async {
     final response = await http.get(
       Uri.parse('$baseUrl/all'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Info.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load content: ${response.reasonPhrase}');
-    }
-  }
-
-  Future<Info> getContentById(int id, String token) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/educational-content/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return Info.fromJson(json.decode(response.body));
+      List<dynamic> jsonList = json.decode(response.body);
+      return jsonList.map((json) => Info.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load content: ${response.reasonPhrase}');
     }
@@ -53,31 +34,24 @@ class InfoRepositoryImpl {
     }
   }
 
-  Future<void> updateContent(int id, Info content, String token) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/educational-content/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: json.encode(content.toJson()),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update content: ${response.reasonPhrase}');
+  Future<String> getRoleFromToken(String token) async {
+    final payload = _decodeToken(token);
+    if (payload['role'] != null) {
+      return payload['role'];
+    } else {
+      throw Exception('Role not found in token');
     }
   }
 
-  Future<void> deleteContent(int id, String token) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/educational-content/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete content: ${response.reasonPhrase}');
+  Map<String, dynamic> _decodeToken(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      throw Exception('Invalid token');
     }
+
+    final payload = json.decode(
+      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+    );
+    return payload;
   }
 }

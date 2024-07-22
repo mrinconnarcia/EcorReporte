@@ -1,5 +1,3 @@
-import 'package:ecoreporte/presentation/bloc/authentication_bloc.dart';
-import 'package:ecoreporte/presentation/bloc/authentication_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
@@ -58,7 +56,6 @@ class _AddReportPageState extends State<AddReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
     return Scaffold(
       body: Column(
         children: [
@@ -82,7 +79,6 @@ class _AddReportPageState extends State<AddReportPage> {
                   icon: Icon(Icons.exit_to_app),
                   onPressed: () async {
                     await secureStorage.deleteUserInfo();
-                    authenticationBloc.add(LoggedOut());
                     Navigator.of(context).pushReplacementNamed('/');
                   },
                   tooltip: 'Cerrar sesión',
@@ -127,8 +123,8 @@ class _AddReportPageState extends State<AddReportPage> {
                           DropdownMenuItem(value: 'deforestacion', child: Text('Deforestación')),
                           DropdownMenuItem(value: 'contaminacion_agua', child: Text('Contaminación del Agua')),
                           DropdownMenuItem(value: 'contaminacion_aire', child: Text('Contaminación del Aire')),
-                          DropdownMenuItem(value: 'residuos_solidos', child: Text('Residuos Sólidos')),
-                          DropdownMenuItem(value: 'otro', child: Text('Otro')),
+                          DropdownMenuItem(value: 'residuos_solidos', child: Text('Basura')),
+                          DropdownMenuItem(value: 'Plantas y/o animales', child: Text('Plantas y/o animales')),
                         ],
                         onChanged: (value) {
                           _typeController.text = value ?? '';

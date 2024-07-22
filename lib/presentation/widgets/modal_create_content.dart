@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/info.dart';
 import '../../data/repositories/info_repository_impl.dart';
 import 'package:provider/provider.dart';
-import '../../utils/secure_storage.dart'; // Asegúrate de importar SecureStorage
+import '../../utils/secure_storage.dart';
 
 class CreateContentModal extends StatefulWidget {
   @override
@@ -15,6 +15,7 @@ class _CreateContentModalState extends State<CreateContentModal> {
   final _descriptionController = TextEditingController();
   final _contentController = TextEditingController();
   final _imageUrlController = TextEditingController();
+  final _codeController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +69,16 @@ class _CreateContentModalState extends State<CreateContentModal> {
                 return null;
               },
             ),
+            TextFormField(
+              controller: _codeController,
+              decoration: InputDecoration(labelText: 'Código'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese el código';
+                }
+                return null;
+              },
+            ),
           ],
         ),
       ),
@@ -76,20 +87,21 @@ class _CreateContentModalState extends State<CreateContentModal> {
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
               final content = Info(
-                id: 0, // Proporciona un ID temporal si es necesario
+                id: 0,
                 title: _titleController.text,
                 description: _descriptionController.text,
                 content: _contentController.text,
                 imageUrl: _imageUrlController.text,
+                code: _codeController.text,
               );
 
               final token = await secureStorage.getToken();
               if (token != null) {
-                repository.createContent(content, token).then((_) {
-                  Navigator.of(context).pop();
-                }).catchError((error) {
-                  // Manejar el error
-                });
+                // repository.createContent(content, token).then((_) {
+                //   Navigator.of(context).pop();
+                // }).catchError((error) {
+                //   // Manejar el error
+                // });
               } else {
                 // Manejar la ausencia del token
               }
