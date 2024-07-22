@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class CommunityModel {
   final String code;
   final String name;

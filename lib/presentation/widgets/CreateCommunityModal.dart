@@ -1,8 +1,5 @@
-import 'package:ecoreporte/domain/entities/community.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../data/repositories/community_repository_impl.dart';
-import '../../utils/secure_storage.dart';
 
 class CreateCommunityModal extends StatefulWidget {
   @override
@@ -12,12 +9,11 @@ class CreateCommunityModal extends StatefulWidget {
 class _CreateCommunityModalState extends State<CreateCommunityModal> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _codeController = TextEditingController();
+  final CommunityRepositoryImpl _communityRepository = CommunityRepositoryImpl();
 
   @override
   Widget build(BuildContext context) {
-    final repository = Provider.of<CommunityRepositoryImpl>(context);
-    final secureStorage = SecureStorage();
-
     return AlertDialog(
       title: Text('Crear Comunidad'),
       content: Form(
@@ -27,10 +23,23 @@ class _CreateCommunityModalState extends State<CreateCommunityModal> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nombre'),
+              decoration: InputDecoration(labelText: 'Nombre de la Comunidad'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Por favor ingrese un nombre';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              controller: _codeController,
+              decoration: InputDecoration(labelText: 'Código de la Comunidad'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor ingrese un código';
+                }
+                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
+                  return 'El código debe contener solo letras y números';
                 }
                 return null;
               },
@@ -39,29 +48,31 @@ class _CreateCommunityModalState extends State<CreateCommunityModal> {
         ),
       ),
       actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('Cancelar'),
+        ),
         ElevatedButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              final community = CommunityModel(
-                code: '', // El código se obtiene del token
-                name: _nameController.text,
-                idAdmin: '', // El ID del administrador se obtiene del token
-              );
-
-              final token = await secureStorage.getToken();
-              if (token != null) {
-                repository.createCommunity(community, token).then((_) {
+              try {
+                bool success = await _communityRepository.createCommunity(
+                  _nameController.text,
+                  _codeController.text,
+                );
+                if (success) {
                   Navigator.of(context).pop();
-                }).catchError((error) {
-                  // Manejar el error
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error al crear la comunidad: $error')),
+                    SnackBar(content: Text('Comunidad creada exitosamente')),
                   );
-                });
-              } else {
-                // Manejar la ausencia del token
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al crear la comunidad')),
+                  );
+                }
+              } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('No se encontró un token válido')),
+                  SnackBar(content: Text('Error: ${e.toString()}')),
                 );
               }
             }

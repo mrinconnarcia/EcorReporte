@@ -153,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 foregroundColor: Colors.black),
                           ),
                           SizedBox(height: 10),
-                          if (userData['role'] == 'admin') // Mostrar solo a administradores
+                          if (userData['role'] == 'admin')
                             ElevatedButton(
                               onPressed: () {
                                 showDialog(
@@ -163,8 +163,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               },
                               child: Text('Crear Comunidad'),
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white),
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
                             ),
                           SizedBox(height: 10),
                           ElevatedButton(

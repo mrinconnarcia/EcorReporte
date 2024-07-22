@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/info_model.dart';
+import '../../domain/entities/info.dart';
 import '../../data/repositories/info_repository_impl.dart';
 import 'package:provider/provider.dart';
 import '../../utils/secure_storage.dart'; // Asegúrate de importar SecureStorage
@@ -75,7 +75,7 @@ class _CreateContentModalState extends State<CreateContentModal> {
         ElevatedButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              final content = InfoModel(
+              final content = Info(
                 id: 0, // Proporciona un ID temporal si es necesario
                 title: _titleController.text,
                 description: _descriptionController.text,

@@ -1,15 +1,15 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/info_model.dart';
+import '../../domain/entities/info.dart';
 
 class InfoRepositoryImpl {
-  final String baseUrl = 'https://gjhmw1vf-3005.use.devtunnels.ms';
+  final String baseUrl = 'http://54.225.155.228:3001/api/education/educational';
 
   InfoRepositoryImpl();
 
-  Future<List<InfoModel>> getAllContent(String token) async {
+  Future<List<Info>> getAllContent(String token) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/educational-content/all'),
+      Uri.parse('$baseUrl/all'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -17,13 +17,13 @@ class InfoRepositoryImpl {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => InfoModel.fromJson(json)).toList();
+      return data.map((json) => Info.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load content: ${response.reasonPhrase}');
     }
   }
 
-  Future<InfoModel> getContentById(int id, String token) async {
+  Future<Info> getContentById(int id, String token) async {
     final response = await http.get(
       Uri.parse('$baseUrl/educational-content/$id'),
       headers: {
@@ -32,15 +32,15 @@ class InfoRepositoryImpl {
     );
 
     if (response.statusCode == 200) {
-      return InfoModel.fromJson(json.decode(response.body));
+      return Info.fromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to load content: ${response.reasonPhrase}');
     }
   }
 
-  Future<void> createContent(InfoModel content, String token) async {
+  Future<void> createContent(Info content, String token) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/educational-content'),
+      Uri.parse('$baseUrl/create'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -53,7 +53,7 @@ class InfoRepositoryImpl {
     }
   }
 
-  Future<void> updateContent(int id, InfoModel content, String token) async {
+  Future<void> updateContent(int id, Info content, String token) async {
     final response = await http.put(
       Uri.parse('$baseUrl/educational-content/$id'),
       headers: {

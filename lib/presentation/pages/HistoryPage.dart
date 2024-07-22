@@ -1,13 +1,13 @@
-import 'package:ecoreporte/presentation/widgets/ReportDetailPage.dart';
+import 'package:ecoreporte/domain/entities/report_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:ecoreporte/utils/secure_storage.dart';
-import 'package:ecoreporte/domain/entities/report.dart';
 import 'package:ecoreporte/presentation/widgets/SharedBottomNavigationBar.dart';
 import 'package:ecoreporte/data/repositories/report_repository_impl.dart';
 import 'package:ecoreporte/presentation/bloc/authentication_bloc.dart';
 import 'package:ecoreporte/presentation/bloc/authentication_event.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -16,126 +16,108 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   final secureStorage = SecureStorage();
-  late Future<List<Report>> _reportHistory;
+  Map<String, String> reportStatuses = {};
 
-  @override
-  void initState() {
-    super.initState();
-    _loadReportHistory();
+  Future<List<ReportSummary>> _fetchReports(BuildContext context, String token) async {
+    final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
+    return reportRepository.fetchReports(token);
   }
 
-  void _loadReportHistory() async {
-    final token = await secureStorage.getToken();
-    final userData = await secureStorage.getUserData();
-
-    if (token != null && userData != null) {
-      final code = userData['code'];
-      setState(() {
-        _reportHistory = Provider.of<ReportRepositoryImpl>(context, listen: false).fetchReports(token);
-      });
-    }
-  }
-
-  void _editReport(BuildContext context, Report report) {
-    final titleController = TextEditingController(text: report.title);
-    final typeController = TextEditingController(text: report.type);
-    final descriptionController = TextEditingController(text: report.description);
-    final placeController = TextEditingController(text: report.place);
-    final postalCodeController = TextEditingController(text: report.postalCode);
-    final namesController = TextEditingController(text: report.names);
-    final lastNameController = TextEditingController(text: report.lastName);
-    final phoneController = TextEditingController(text: report.phone);
-    final emailController = TextEditingController(text: report.email);
-
+  void _editReport(BuildContext context, ReportSummary report) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Editar Reporte'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(labelText: 'Título'),
-              ),
-              TextField(
-                controller: typeController,
-                decoration: InputDecoration(labelText: 'Tipo'),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Descripción'),
-              ),
-              TextField(
-                controller: placeController,
-                decoration: InputDecoration(labelText: 'Lugar'),
-              ),
-              TextField(
-                controller: postalCodeController,
-                decoration: InputDecoration(labelText: 'Código Postal'),
-              ),
-              TextField(
-                controller: namesController,
-                decoration: InputDecoration(labelText: 'Nombres'),
-              ),
-              TextField(
-                controller: lastNameController,
-                decoration: InputDecoration(labelText: 'Apellidos'),
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: InputDecoration(labelText: 'Teléfono'),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(labelText: 'Email'),
-              ),
-            ],
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Cambiar estado del reporte:'),
+            DropdownButton<String>(
+              value: reportStatuses[report.id] ?? 'pendiente',
+              items: ['pendiente', 'realizado'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    reportStatuses[report.id] = newValue;
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final updatedReport = Report(
-                id: report.id,
-                title: titleController.text,
-                type: typeController.text,
-                description: descriptionController.text,
-                place: placeController.text,
-                postalCode: postalCodeController.text,
-                names: namesController.text,
-                lastName: lastNameController.text,
-                phone: phoneController.text,
-                email: emailController.text,
-              );
-
-              await Provider.of<ReportRepositoryImpl>(context, listen: false).updateReport(updatedReport);
-              Navigator.pop(context);
-              _loadReportHistory();
-            },
-            child: Text('Guardar'),
-          ),
-        ],
       ),
     );
   }
 
-  void _deleteReport(BuildContext context, int reportId) async {
-    try {
-      await Provider.of<ReportRepositoryImpl>(context, listen: false).deleteReport(reportId);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reporte eliminado exitosamente')),
-      );
-      _loadReportHistory();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al eliminar el reporte: $e')),
-      );
+  void _deleteReport(BuildContext context, String reportId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Eliminar Reporte'),
+        content: Text('¿Estás seguro de que quieres eliminar este reporte?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
+        await reportRepository.deleteReport(int.parse(reportId));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Reporte eliminado exitosamente')),
+        );
+        setState(() {
+          reportStatuses.remove(reportId);
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al eliminar el reporte: $e')),
+        );
+      }
     }
+  }
+
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception('No se pudo abrir $url');
+    }
+  }
+
+  Widget _buildViewPDFButton() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.picture_as_pdf, color: Colors.white, size: 18),
+          SizedBox(width: 4),
+          Text(
+            'Ver PDF',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -182,50 +164,71 @@ class _HistoryPageState extends State<HistoryPage> {
           } else {
             final userData = userDataSnapshot.data!;
             final role = userData['role'];
-            final code = userData['code'];
 
-            return FutureBuilder<List<Report>>(
-              future: _reportHistory,
-              builder: (context, reportSnapshot) {
-                if (reportSnapshot.connectionState == ConnectionState.waiting) {
+            return FutureBuilder<String?>(
+              future: secureStorage.getToken(),
+              builder: (context, tokenSnapshot) {
+                if (tokenSnapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
-                } else if (reportSnapshot.hasError || !reportSnapshot.hasData) {
-                  return Center(child: Text('No se encontraron reportes'));
+                } else if (tokenSnapshot.hasError || !tokenSnapshot.hasData) {
+                  return Center(child: Text('No se pudo obtener el token'));
                 } else {
-                  final reports = reportSnapshot.data!;
-                  final filteredReports = reports.where((report) => report.postalCode == code).toList();
-
-                  return ListView.builder(
-                    itemCount: filteredReports.length,
-                    itemBuilder: (context, index) {
-                      final report = filteredReports[index];
-                      return ListTile(
-                        title: Text(report.title),
-                        subtitle: Text(report.description),
-                        trailing: role == 'admin'
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
+                  final token = tokenSnapshot.data!;
+                  return FutureBuilder<List<ReportSummary>>(
+                    future: _fetchReports(context, token),
+                    builder: (context, reportSnapshot) {
+                      if (reportSnapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (reportSnapshot.hasError) {
+                        return Center(child: Text('Error: ${reportSnapshot.error}'));
+                      } else if (!reportSnapshot.hasData || reportSnapshot.data!.isEmpty) {
+                        return Center(child: Text('No se encontraron reportes'));
+                      } else {
+                        final reports = reportSnapshot.data!;
+                        return ListView.builder(
+                          itemCount: reports.length,
+                          itemBuilder: (context, index) {
+                            final report = reports[index];
+                            return Card(
+                              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit),
-                                    onPressed: () => _editReport(context, report),
+                                  ListTile(
+                                    title: Text(
+                                      report.tituloReporte,
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text('Estatus: ${reportStatuses[report.id] ?? 'pendiente'}'),
+                                    trailing: role == 'admin'
+                                        ? Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(Icons.edit, color: Colors.blue),
+                                                onPressed: () => _editReport(context, report),
+                                              ),
+                                              IconButton(
+                                                icon: Icon(Icons.delete, color: Colors.red),
+                                                onPressed: () => _deleteReport(context, report.id),
+                                              ),
+                                            ],
+                                          )
+                                        : null,
                                   ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete),
-                                    onPressed: () => _deleteReport(context, report.id),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                                    child: GestureDetector(
+                                      onTap: () => _launchURL(report.pdfUrl),
+                                      child: _buildViewPDFButton(),
+                                    ),
                                   ),
                                 ],
-                              )
-                            : null,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReportDetailPage(report: report),
-                            ),
-                          );
-                        },
-                      );
+                              ),
+                            );
+                          },
+                        );
+                      }
                     },
                   );
                 }

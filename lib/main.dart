@@ -1,4 +1,5 @@
 import 'package:ecoreporte/data/repositories/community_repository_impl.dart';
+import 'package:ecoreporte/data/repositories/report_repository_impl.dart';
 import 'package:ecoreporte/utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,7 +25,10 @@ class EcoReporteApp extends StatelessWidget {
           create: (context) => InfoRepositoryImpl(),
         ),
         Provider<CommunityRepositoryImpl>(
-          create: (context) => CommunityRepositoryImpl(SecureStorage()),
+          create: (context) => CommunityRepositoryImpl(),
+        ),
+        Provider<ReportRepositoryImpl>(
+          create: (_) => ReportRepositoryImpl(),
         ),
       ],
       child: MaterialApp(

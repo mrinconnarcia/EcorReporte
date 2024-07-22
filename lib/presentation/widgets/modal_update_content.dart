@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../data/models/info_model.dart';
+import '../../domain/entities/info.dart';
 import '../../data/repositories/info_repository_impl.dart';
 import 'package:provider/provider.dart';
 import '../../utils/secure_storage.dart'; // Asegúrate de importar SecureStorage
 
 class UpdateContentModal extends StatefulWidget {
-  final InfoModel content;
+  final Info content;
 
   UpdateContentModal({required this.content});
 
@@ -88,7 +88,7 @@ class _UpdateContentModalState extends State<UpdateContentModal> {
         ElevatedButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              final updatedContent = InfoModel(
+              final updatedContent = Info(
                 id: widget.content.id,
                 title: _titleController.text,
                 description: _descriptionController.text,

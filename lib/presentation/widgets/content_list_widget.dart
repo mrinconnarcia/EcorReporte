@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../data/models/info_model.dart';
+import '../../domain/entities/info.dart';
 
 class ContentListWidget extends StatelessWidget {
-  final List<InfoModel> contentList;
+  final List<Info> contentList;
 
   ContentListWidget({required this.contentList});
 
@@ -11,7 +11,7 @@ class ContentListWidget extends StatelessWidget {
     return ListView.builder(
       itemCount: contentList.length,
       itemBuilder: (context, index) {
-        InfoModel info = contentList[index]; 
+        Info info = contentList[index]; 
         return Padding(
           padding: EdgeInsets.all(16),
           child: Column(

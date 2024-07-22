@@ -9,8 +9,7 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<bool> register(String name, String lastName, String email, String password, String role, String gender, String phone, String code) async {
     final response = await http.post(
-      // Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/register'),
-      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/register'),
+      Uri.parse('http://54.225.155.228:3001/user/register'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -35,7 +34,7 @@ class UserRepositoryImpl implements UserRepository {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/login/auth'),
+      Uri.parse('http://54.225.155.228:3001/login/auth'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -65,7 +64,7 @@ class UserRepositoryImpl implements UserRepository {
     }
 
     final response = await http.get(
-      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/profile'),
+      Uri.parse('http://54.225.155.228:3001/user/profile'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -86,7 +85,7 @@ class UserRepositoryImpl implements UserRepository {
     }
 
     final response = await http.put(
-      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/update-email/${userData['email']}'),
+      Uri.parse('http://54.225.155.228:3001/user/update-email/${userData['email']}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -108,7 +107,7 @@ class UserRepositoryImpl implements UserRepository {
     }
 
     final response = await http.delete(
-      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/user/delete-email/$email'),
+      Uri.parse('http://54.225.155.228:3001/user/delete-email/$email'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',

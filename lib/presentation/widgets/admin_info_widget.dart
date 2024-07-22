@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ecoreporte/data/models/info_model.dart';
+import 'package:ecoreporte/domain/entities/info.dart';
 import 'package:ecoreporte/data/repositories/info_repository_impl.dart';
 import 'modal_create_content.dart';
 import 'modal_update_content.dart';
@@ -28,7 +28,7 @@ class AdminInfoWidget extends StatelessWidget {
           child: Text('Crear Contenido'),
         ),
         Expanded(
-          child: FutureBuilder<List<InfoModel>>(
+          child: FutureBuilder<List<Info>>(
             future: _loadContent(infoRepository, secureStorage),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -83,7 +83,7 @@ class AdminInfoWidget extends StatelessWidget {
     );
   }
 
-  Future<List<InfoModel>> _loadContent(InfoRepositoryImpl repository, SecureStorage secureStorage) async {
+  Future<List<Info>> _loadContent(InfoRepositoryImpl repository, SecureStorage secureStorage) async {
     final token = await secureStorage.getToken();
     if (token != null) {
       return await repository.getAllContent(token);

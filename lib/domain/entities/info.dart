@@ -1,11 +1,11 @@
-class InfoModel {
+class Info {
   final int id;
   final String title;
   final String description;
   final String content;
   final String imageUrl;
 
-  InfoModel({
+  Info({
     required this.id,
     required this.title,
     required this.description,
@@ -13,8 +13,8 @@ class InfoModel {
     required this.imageUrl,
   });
 
-  factory InfoModel.fromJson(Map<String, dynamic> json) {
-    return InfoModel(
+  factory Info.fromJson(Map<String, dynamic> json) {
+    return Info(
       id: json['id'],
       title: json['title'],
       description: json['description'],
