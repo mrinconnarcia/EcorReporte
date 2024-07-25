@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ecoreporte/domain/entities/report.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ecoreporte/data/repositories/report_repository_impl.dart';
@@ -55,246 +56,164 @@ class _AddReportPageState extends State<AddReportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            color: Color(0xFF9DE976),
-            padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: Colors.grey[100],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(96),
+        child: Container(
+          color: Color(0xFF9DE976),
+          padding: EdgeInsets.fromLTRB(16, 40, 16, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Image.asset('assets/eco_reporte_logo.png', height: 40),
+                  SizedBox(width: 8),
+                  Text(
+                    'EcoReporte',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: Icon(Icons.exit_to_app),
+                onPressed: () async {
+                  await secureStorage.deleteUserInfo();
+                  Navigator.of(context).pushReplacementNamed('/');
+                },
+                tooltip: 'Cerrar sesión',
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Crear Reporte',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 24),
+                buildInputField(Icons.title, 'Título del Reporte', _titleController),
+                SizedBox(height: 16),
+                buildDropdownField(Icons.category, 'Tipo de Incidente', _typeController),
+                SizedBox(height: 16),
+                buildInputField(Icons.description, 'Descripción del Incidente', _descriptionController, maxLines: 3),
+                SizedBox(height: 16),
                 Row(
                   children: [
-                    Image.asset('assets/eco_reporte_logo.png', height: 40),
-                    SizedBox(width: 8),
-                    Text(
-                      'EcoReporte',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
+                    Expanded(child: buildInputField(Icons.place, 'Lugar del Incidente', _placeController)),
+                    SizedBox(width: 16),
+                    Expanded(child: buildInputField(Icons.location_city, 'Código Postal', _postalCodeController)),
                   ],
                 ),
-                IconButton(
-                  icon: Icon(Icons.exit_to_app),
-                  onPressed: () async {
-                    await secureStorage.deleteUserInfo();
-                    Navigator.of(context).pushReplacementNamed('/');
-                  },
-                  tooltip: 'Cerrar sesión',
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: buildInputField(Icons.person, 'Nombres', _namesController, readOnly: true)),
+                    SizedBox(width: 16),
+                    Expanded(child: buildInputField(Icons.person_outline, 'Apellidos', _lastNameController, readOnly: true)),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: buildInputField(Icons.phone, 'Teléfono', _phoneController, readOnly: true)),
+                    SizedBox(width: 16),
+                    Expanded(child: buildInputField(Icons.email, 'Correo Electrónico', _emailController, readOnly: true)),
+                  ],
+                ),
+                SizedBox(height: 24),
+                if (_selectedFile != null)
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Image.file(_selectedFile!, fit: BoxFit.cover),
+                  ),
+                SizedBox(height: 16),
+                ElevatedButton.icon(
+                  icon: Icon(Icons.image),
+                  label: Text('Seleccionar Imagen'),
+                  onPressed: _selectFile,
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.grey[300],
+                    onPrimary: Colors.black87,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        try {
+                          final token = await secureStorage.getToken();
+                          if (token != null) {
+                            final report = Report(
+                              titulo_reporte: _titleController.text,
+                              tipo_reporte: _typeController.text,
+                              descripcion: _descriptionController.text,
+                              colonia: _placeController.text,
+                              codigo_postal: _postalCodeController.text,
+                              nombres: _namesController.text,
+                              apellidos: _lastNameController.text,
+                              telefono: _phoneController.text,
+                              correo: _emailController.text,
+                            );
+
+                            if (_selectedFile != null) {
+                              await reportRepository.createReport(
+                                  report, _selectedFile!.path, token);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Reporte creado exitosamente')),
+                              );
+                              Navigator.of(context).pushReplacementNamed('/home-app');
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Seleccione una imagen')),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('No se encontró el token')),
+                            );
+                          }
+                        } catch (e) {
+                          print('Error creating report: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al crear el reporte: $e')),
+                          );
+                        }
+                      }
+                    },
+                    child: Text('Crear Reporte'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Color(0xFF549CDE),
+                      onPrimary: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Crear Reporte',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          labelText: 'Título del Reporte',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese un título para el reporte';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          labelText: 'Tipo de Incidente',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                              value: 'deforestacion',
-                              child: Text('Deforestación')),
-                          DropdownMenuItem(
-                              value: 'contaminacion_agua',
-                              child: Text('Contaminación del Agua')),
-                          DropdownMenuItem(
-                              value: 'contaminacion_aire',
-                              child: Text('Contaminación del Aire')),
-                          DropdownMenuItem(
-                              value: 'residuos_solidos', child: Text('Basura')),
-                          DropdownMenuItem(
-                              value: 'plantas_animales',
-                              child: Text('Plantas y/o animales')),
-                        ],
-                        onChanged: (value) {
-                          _typeController.text = value ?? '';
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor seleccione un tipo de incidente';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: InputDecoration(
-                          labelText: 'Descripción del Incidente',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese una descripción';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _placeController,
-                        decoration: InputDecoration(
-                          labelText: 'Lugar del Incidente',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese el lugar del incidente';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _postalCodeController,
-                        decoration: InputDecoration(
-                          labelText: 'Código Postal',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor ingrese el código postal';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _namesController,
-                        decoration: InputDecoration(
-                          labelText: 'Nombres',
-                          border: OutlineInputBorder(),
-                        ),
-                        readOnly: true,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _lastNameController,
-                        decoration: InputDecoration(
-                          labelText: 'Apellidos',
-                          border: OutlineInputBorder(),
-                        ),
-                        readOnly: true,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _phoneController,
-                        decoration: InputDecoration(
-                          labelText: 'Teléfono',
-                          border: OutlineInputBorder(),
-                        ),
-                        readOnly: true,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Correo Electrónico',
-                          border: OutlineInputBorder(),
-                        ),
-                        readOnly: true,
-                      ),
-                      SizedBox(height: 16),
-                      if (_selectedFile != null)
-                        Image.file(
-                          _selectedFile!,
-                          width: 100,
-                          height: 100,
-                        ),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _selectFile,
-                        child: Text('Seleccionar Imagen'),
-                      ),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState?.validate() ?? false) {
-                            try {
-                              final token = await secureStorage.getToken();
-                              if (token != null) {
-                                final reportData = {
-                                  'titulo_reporte': _titleController.text,
-                                  'tipo_reporte': _typeController.text,
-                                  'descripcion': _descriptionController.text,
-                                  'colonia': _placeController.text,
-                                  'codigo_postal': _postalCodeController.text,
-                                  'nombres': _namesController.text,
-                                  'apellidos': _lastNameController.text,
-                                  'telefono': _phoneController.text,
-                                  'correo': _emailController.text,
-                                };
-
-                                if (_selectedFile != null) {
-                                  await reportRepository.createReport(
-                                      reportData, _selectedFile!.path, token);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            'Reporte creado exitosamente')),
-                                  );
-                                  Navigator.of(context).pop();
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text('Seleccione una imagen')),
-                                  );
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text('No se encontró el token')),
-                                );
-                              }
-                            } catch (e) {
-                              print('Error creating report: $e');
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content:
-                                        Text('Error al crear el reporte: $e')),
-                              );
-                            }
-                          }
-                        },
-                        child: Text('Crear Reporte'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
       bottomNavigationBar: SharedBottomNavigationBar(
         currentIndex: 2,
@@ -312,6 +231,61 @@ class _AddReportPageState extends State<AddReportPage> {
           }
         },
       ),
+    );
+  }
+
+  Widget buildInputField(IconData icon, String label, TextEditingController controller, {bool readOnly = false, int maxLines = 1}) {
+    return TextFormField(
+      controller: controller,
+      readOnly: readOnly,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor ingrese $label';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget buildDropdownField(IconData icon, String label, TextEditingController controller) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+      items: [
+        DropdownMenuItem(value: 'deforestacion', child: Text('Deforestación')),
+        DropdownMenuItem(value: 'contaminacion_agua', child: Text('Contaminación del Agua')),
+        DropdownMenuItem(value: 'contaminacion_aire', child: Text('Contaminación del Aire')),
+        DropdownMenuItem(value: 'residuos_solidos', child: Text('Basura')),
+        DropdownMenuItem(value: 'plantas_animales', child: Text('Plantas y/o animales')),
+      ],
+      onChanged: (value) {
+        controller.text = value ?? '';
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Por favor seleccione un tipo de incidente';
+        }
+        return null;
+      },
     );
   }
 }

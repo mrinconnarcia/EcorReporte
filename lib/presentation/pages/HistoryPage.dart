@@ -18,8 +18,10 @@ class _HistoryPageState extends State<HistoryPage> {
   final secureStorage = SecureStorage();
   Map<String, String> reportStatuses = {};
 
-  Future<List<ReportSummary>> _fetchReports(BuildContext context, String token) async {
-    final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
+  Future<List<ReportSummary>> _fetchReports(
+      BuildContext context, String token) async {
+    final reportRepository =
+        Provider.of<ReportRepositoryImpl>(context, listen: false);
     return reportRepository.fetchReports(token);
   }
 
@@ -55,12 +57,13 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  void _deleteReport(BuildContext context, String reportId) async {
+  void _deleteReport(BuildContext context, ReportSummary report) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Eliminar Reporte'),
-        content: Text('¿Estás seguro de que quieres eliminar este reporte?'),
+        content: Text(
+            '¿Estás seguro de que quieres eliminar el reporte "${report.tituloReporte}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -76,13 +79,19 @@ class _HistoryPageState extends State<HistoryPage> {
 
     if (confirmed == true) {
       try {
-        final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
-        await reportRepository.deleteReport(int.parse(reportId));
+        final reportRepository =
+            Provider.of<ReportRepositoryImpl>(context, listen: false);
+        final token = await secureStorage.getToken();
+        if (token == null) {
+          throw Exception('No se pudo obtener el token');
+        }
+        await reportRepository.deleteReport(report.id, token,
+            tituloReporte: report.tituloReporte);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Reporte eliminado exitosamente')),
         );
         setState(() {
-          reportStatuses.remove(reportId);
+          reportStatuses.remove(report.id);
         });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -177,12 +186,16 @@ class _HistoryPageState extends State<HistoryPage> {
                   return FutureBuilder<List<ReportSummary>>(
                     future: _fetchReports(context, token),
                     builder: (context, reportSnapshot) {
-                      if (reportSnapshot.connectionState == ConnectionState.waiting) {
+                      if (reportSnapshot.connectionState ==
+                          ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       } else if (reportSnapshot.hasError) {
-                        return Center(child: Text('Error: ${reportSnapshot.error}'));
-                      } else if (!reportSnapshot.hasData || reportSnapshot.data!.isEmpty) {
-                        return Center(child: Text('No se encontraron reportes'));
+                        return Center(
+                            child: Text('Error: ${reportSnapshot.error}'));
+                      } else if (!reportSnapshot.hasData ||
+                          reportSnapshot.data!.isEmpty) {
+                        return Center(
+                            child: Text('No se encontraron reportes'));
                       } else {
                         final reports = reportSnapshot.data!;
                         return ListView.builder(
@@ -190,34 +203,42 @@ class _HistoryPageState extends State<HistoryPage> {
                           itemBuilder: (context, index) {
                             final report = reports[index];
                             return Card(
-                              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              margin: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ListTile(
                                     title: Text(
                                       report.tituloReporte,
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
-                                    subtitle: Text('Estatus: ${reportStatuses[report.id] ?? 'pendiente'}'),
+                                    subtitle: Text(
+                                        'Estatus: ${reportStatuses[report.id] ?? 'pendiente'}'),
                                     trailing: role == 'admin'
                                         ? Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               IconButton(
-                                                icon: Icon(Icons.edit, color: Colors.blue),
-                                                onPressed: () => _editReport(context, report),
+                                                icon: Icon(Icons.edit,
+                                                    color: Colors.blue),
+                                                onPressed: () => _editReport(
+                                                    context, report),
                                               ),
                                               IconButton(
-                                                icon: Icon(Icons.delete, color: Colors.red),
-                                                onPressed: () => _deleteReport(context, report.id),
+                                                icon: Icon(Icons.delete,
+                                                    color: Colors.red),
+                                                onPressed: () => _deleteReport(
+                                                    context, report),
                                               ),
                                             ],
                                           )
                                         : null,
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                                    padding: EdgeInsets.only(
+                                        left: 16, right: 16, bottom: 16),
                                     child: GestureDetector(
                                       onTap: () => _launchURL(report.pdfUrl),
                                       child: _buildViewPDFButton(),

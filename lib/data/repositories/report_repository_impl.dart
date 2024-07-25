@@ -13,10 +13,10 @@ class ReportRepositoryImpl {
   final Dio _dio = Dio();
 
   Future<void> createReport(
-      Map<String, String> reportData, String filePath, String token) async {
+      Report report, String filePath, String token) async {
     try {
       final formData = FormData.fromMap({
-        ...reportData,
+        ...report.toJson(),
         'image': await MultipartFile.fromFile(filePath),
       });
 
@@ -41,8 +41,8 @@ class ReportRepositoryImpl {
         );
       }
     } on DioError catch (e) {
+      print('Dio error!');
       if (e.response != null) {
-        print('Dio error!');
         print('STATUS: ${e.response?.statusCode}');
         print('DATA: ${e.response?.data}');
         print('HEADERS: ${e.response?.headers}');
@@ -51,6 +51,9 @@ class ReportRepositoryImpl {
         print(e.message);
       }
       throw Exception('Failed to create report: ${e.message}');
+    } catch (e) {
+      print('Unexpected error: $e');
+      throw Exception('An unexpected error occurred: $e');
     }
   }
 
@@ -109,11 +112,47 @@ class ReportRepositoryImpl {
     }
   }
 
-  Future<void> deleteReport(int id) async {
-    final response = await _dio.delete('$initialApiUrl/$id');
+  Future<void> deleteReport(String id, String token,
+      {required String tituloReporte}) async {
+    try {
+      // First, show a confirmation dialog (this should be done in the UI layer)
+      // For demonstration, we'll just print the confirmation message
+      print(
+          '¿Estás seguro de que deseas eliminar el reporte "$tituloReporte"?');
 
-    if (response.statusCode != 200) {
-      throw Exception('Error al eliminar el reporte');
+      final response = await _dio.delete(
+        '$initialApiUrl/$id',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print('Reporte eliminado exitosamente');
+      } else {
+        throw DioError(
+          requestOptions: response.requestOptions,
+          response: response,
+          error: 'Unexpected status code: ${response.statusCode}',
+        );
+      }
+    } on DioError catch (e) {
+      print('Dio error!');
+      if (e.response != null) {
+        print('STATUS: ${e.response?.statusCode}');
+        print('DATA: ${e.response?.data}');
+        print('HEADERS: ${e.response?.headers}');
+      } else {
+        print('Error sending request!');
+        print(e.message);
+      }
+      throw Exception('Failed to delete report: ${e.message}');
+    } catch (e) {
+      print('Unexpected error: $e');
+      throw Exception(
+          'An unexpected error occurred while deleting the report: $e');
     }
   }
 }
