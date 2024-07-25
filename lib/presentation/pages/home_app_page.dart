@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:ecoreporte/data/repositories/statistics_report_repository_impl.dart';
+import 'dart:typed_data';
 import '../widgets/SharedBottomNavigationBar.dart';
+import 'package:photo_view/photo_view.dart';
 import '../../utils/secure_storage.dart';
+import '../../data/repositories/statistics_report_repository_impl.dart';
 
 class HomeAppPage extends StatefulWidget {
   @override
@@ -10,61 +11,95 @@ class HomeAppPage extends StatefulWidget {
 }
 
 class _HomeAppPageState extends State<HomeAppPage> {
-  final StatisticsReportRepositoryImpl reportRepository = StatisticsReportRepositoryImpl();
+  final StatisticsReportRepositoryImpl reportRepository =
+      StatisticsReportRepositoryImpl();
   final SecureStorage secureStorage = SecureStorage();
   bool isAdmin = false;
-  List<PieChartSectionData> pieChartData = [];
-  List<BarChartGroupData> barChartData = [];
+  dynamic pieChartData;
+  dynamic barChartData;
+  bool _mounted = true;
 
   @override
   void initState() {
     super.initState();
     _checkAdminStatus();
-    _loadReportData();
-    _loadBarChartData();
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
   }
 
   void _checkAdminStatus() async {
     final userData = await secureStorage.getUserData();
-    setState(() {
-      isAdmin = userData?['role'] == 'admin';
-    });
-  }
-
-  void _loadReportData() async {
-    if (isAdmin) {
-      final data = await reportRepository.getPieChartStatistics();
+    if (_mounted) {
       setState(() {
-        pieChartData = data.map((item) => PieChartSectionData(
-          value: item['value'].toDouble(),
-          color: _getRandomColor(),
-          title: '${item['label']}\n${item['value']}',
-          radius: 50,
-          titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-        )).toList();
+        isAdmin = userData?['role'] == 'admin';
       });
+      if (isAdmin) {
+        _loadChartData();
+      }
     }
   }
 
-  void _loadBarChartData() async {
-    if (isAdmin) {
-      final data = await reportRepository.getBarChartStatistics();
-      setState(() {
-        barChartData = data.map((item) => BarChartGroupData(
-          x: item['label'],
-          barRods: [
-            BarChartRodData(
-              toY: item['value'].toDouble(),
-              color: _getRandomColor(),
+  void _loadChartData() async {
+    try {
+      final pieData = await reportRepository.getPieChartImage();
+      final barData = await reportRepository.getBarChartImage();
+      if (_mounted) {
+        setState(() {
+          pieChartData = pieData;
+          barChartData = barData;
+        });
+      }
+    } catch (e) {
+      print('Error loading chart data: $e');
+      if (_mounted) {
+        setState(() {
+          pieChartData = e.toString();
+          barChartData = e.toString();
+        });
+      }
+    }
+  }
+
+  Widget _buildChartWidget(dynamic chartData, String title) {
+    if (chartData == null) {
+      return CircularProgressIndicator();
+    } else if (chartData is Uint8List) {
+      return GestureDetector(
+        onTap: () => _showEnlargedChart(context, chartData, title),
+        child: Image.memory(
+          chartData,
+          height: 300,
+          width: double.infinity,
+          fit: BoxFit.contain,
+        ),
+      );
+    } else {
+      return Text('Error: $chartData');
+    }
+  }
+
+  void _showEnlargedChart(
+      BuildContext context, Uint8List imageData, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: Text(title)),
+          body: Container(
+            child: PhotoView(
+              imageProvider: MemoryImage(imageData),
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered * 2,
+              initialScale: PhotoViewComputedScale.contained,
+              backgroundDecoration: BoxDecoration(color: Colors.white),
             ),
-          ],
-        )).toList();
-      });
-    }
-  }
-
-  Color _getRandomColor() {
-    return Color((DateTime.now().millisecondsSinceEpoch * 0.001).toInt() << 0).withOpacity(1.0);
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -85,7 +120,8 @@ class _HomeAppPageState extends State<HomeAppPage> {
                       SizedBox(width: 8),
                       Text(
                         'EcoReporte',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -178,8 +214,8 @@ class _HomeAppPageState extends State<HomeAppPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(
-                            child: Icon(Icons.eco,
-                                size: 50, color: Colors.white),
+                            child:
+                                Icon(Icons.eco, size: 50, color: Colors.white),
                           ),
                         ),
                       ),
@@ -193,71 +229,21 @@ class _HomeAppPageState extends State<HomeAppPage> {
                   if (isAdmin) ...[
                     SizedBox(height: 32),
                     Text(
-                      'Estadísticas de Reportes',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      'Distribución de tipos de reportes',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),
-                    Container(
-                      height: 300,
-                      child: PieChart(
-                        PieChartData(
-                          sections: pieChartData,
-                          sectionsSpace: 0,
-                          centerSpaceRadius: 40,
-                        ),
-                      ),
-                    ),
+                    _buildChartWidget(
+                        pieChartData, 'Distribución de tipos de reportes'),
                     SizedBox(height: 32),
                     Text(
-                      'Gráfica de Barras de Reportes',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      'Top Causas de Reportes',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),
-                    Container(
-                      height: 300,
-                      child: BarChart(
-                        BarChartData(
-                          barGroups: barChartData,
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (double value, TitleMeta meta) {
-                                  final style = TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  );
-                                  String text;
-                                  switch (value.toInt()) {
-                                    case 0:
-                                      text = 'A';
-                                      break;
-                                    case 1:
-                                      text = 'B';
-                                      break;
-                                    case 2:
-                                      text = 'C';
-                                      break;
-                                    case 3:
-                                      text = 'D';
-                                      break;
-                                    default:
-                                      text = '';
-                                      break;
-                                  }
-                                  return SideTitleWidget(
-                                    axisSide: meta.axisSide,
-                                    space: 16,
-                                    child: Text(text, style: style),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    _buildChartWidget(barChartData, 'Top Causas de Reportes'),
                   ],
                 ],
               ),

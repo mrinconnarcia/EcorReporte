@@ -6,30 +6,53 @@ import 'package:ecoreporte/domain/entities/report_summary.dart';
 import '../../utils/secure_storage.dart';
 
 class ReportRepositoryImpl {
-  final String initialApiUrl = "http://54.225.155.228:3001/api/reporting/reports";
+  // final String initialApiUrl = "http://54.225.155.228:3001/api/reporting/reports";
+  final String initialApiUrl =
+      "https://t2zd2jpn-3003.usw3.devtunnels.ms/reports";
+
   final Dio _dio = Dio();
 
- Future<void> createReport(Map<String, String> reportData, String filePath, String token) async {
-  final formData = FormData.fromMap({
-    ...reportData,
-    'image': await MultipartFile.fromFile(filePath),
-  });
+  Future<void> createReport(
+      Map<String, String> reportData, String filePath, String token) async {
+    try {
+      final formData = FormData.fromMap({
+        ...reportData,
+        'image': await MultipartFile.fromFile(filePath),
+      });
 
-  final response = await _dio.post(
-    '$initialApiUrl/create',  // Verifica que esta URL sea correcta
-    data: formData,
-    options: Options(
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': 'Bearer $token',
-      },
-    ),
-  );
+      final response = await _dio.post(
+        '$initialApiUrl/',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
 
-  if (response.statusCode != 201) {
-    throw Exception('Failed to create report: ${response.statusMessage}');
+      if (response.statusCode == 201) {
+        print('Report created successfully');
+      } else {
+        throw DioError(
+          requestOptions: response.requestOptions,
+          response: response,
+          error: 'Unexpected status code: ${response.statusCode}',
+        );
+      }
+    } on DioError catch (e) {
+      if (e.response != null) {
+        print('Dio error!');
+        print('STATUS: ${e.response?.statusCode}');
+        print('DATA: ${e.response?.data}');
+        print('HEADERS: ${e.response?.headers}');
+      } else {
+        print('Error sending request!');
+        print(e.message);
+      }
+      throw Exception('Failed to create report: ${e.message}');
+    }
   }
-}
 
   Future<String> getRoleFromToken(String token) async {
     final payload = _decodeToken(token);
@@ -51,6 +74,7 @@ class ReportRepositoryImpl {
     );
     return payload;
   }
+
   Future<List<ReportSummary>> fetchReports(String token) async {
     final response = await _dio.get(
       '$initialApiUrl/pdf-list',

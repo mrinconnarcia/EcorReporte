@@ -4,7 +4,7 @@ import '../../utils/secure_storage.dart';
 import '../../domain/repositories/user_repository.dart';
 
 class UserRepositoryImpl implements UserRepository {
-  final SecureStorage secureStorage = SecureStorage(); // Instancia de SecureStorage
+  final SecureStorage secureStorage = SecureStorage(); 
 
   @override
   Future<bool> register(String name, String lastName, String email, String password, String role, String gender, String phone, String code) async {
@@ -34,7 +34,8 @@ class UserRepositoryImpl implements UserRepository {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://54.225.155.228:3001/login/auth'),
+      // Uri.parse('http://54.225.155.228:3001/login/auth'),
+      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/login/auth'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

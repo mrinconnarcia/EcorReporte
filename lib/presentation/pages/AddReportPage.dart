@@ -69,7 +69,8 @@ class _AddReportPageState extends State<AddReportPage> {
                     SizedBox(width: 8),
                     Text(
                       'EcoReporte',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -95,7 +96,8 @@ class _AddReportPageState extends State<AddReportPage> {
                     children: [
                       Text(
                         'Crear Reporte',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 16),
                       TextFormField(
@@ -118,11 +120,20 @@ class _AddReportPageState extends State<AddReportPage> {
                           border: OutlineInputBorder(),
                         ),
                         items: [
-                          DropdownMenuItem(value: 'deforestacion', child: Text('Deforestación')),
-                          DropdownMenuItem(value: 'contaminacion_agua', child: Text('Contaminación del Agua')),
-                          DropdownMenuItem(value: 'contaminacion_aire', child: Text('Contaminación del Aire')),
-                          DropdownMenuItem(value: 'residuos_solidos', child: Text('Basura')),
-                          DropdownMenuItem(value: 'plantas_animales', child: Text('Plantas y/o animales')),
+                          DropdownMenuItem(
+                              value: 'deforestacion',
+                              child: Text('Deforestación')),
+                          DropdownMenuItem(
+                              value: 'contaminacion_agua',
+                              child: Text('Contaminación del Agua')),
+                          DropdownMenuItem(
+                              value: 'contaminacion_aire',
+                              child: Text('Contaminación del Aire')),
+                          DropdownMenuItem(
+                              value: 'residuos_solidos', child: Text('Basura')),
+                          DropdownMenuItem(
+                              value: 'plantas_animales',
+                              child: Text('Plantas y/o animales')),
                         ],
                         onChanged: (value) {
                           _typeController.text = value ?? '';
@@ -233,36 +244,44 @@ class _AddReportPageState extends State<AddReportPage> {
                               final token = await secureStorage.getToken();
                               if (token != null) {
                                 final reportData = {
-                                  'TITLE': _titleController.text,
-                                  'TYPE': _typeController.text,
-                                  'DESCRIPTION': _descriptionController.text,
-                                  'PLACE': _placeController.text,
-                                  'POSTAL_CODE': _postalCodeController.text,
-                                  'NAMES': _namesController.text,
-                                  'LASTNAME': _lastNameController.text,
-                                  'PHONE': _phoneController.text,
-                                  'EMAIL': _emailController.text,
+                                  'titulo_reporte': _titleController.text,
+                                  'tipo_reporte': _typeController.text,
+                                  'descripcion': _descriptionController.text,
+                                  'colonia': _placeController.text,
+                                  'codigo_postal': _postalCodeController.text,
+                                  'nombres': _namesController.text,
+                                  'apellidos': _lastNameController.text,
+                                  'telefono': _phoneController.text,
+                                  'correo': _emailController.text,
                                 };
 
                                 if (_selectedFile != null) {
-                                  await reportRepository.createReport(reportData, _selectedFile!.path, token);
+                                  await reportRepository.createReport(
+                                      reportData, _selectedFile!.path, token);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Reporte creado exitosamente')),
+                                    SnackBar(
+                                        content: Text(
+                                            'Reporte creado exitosamente')),
                                   );
                                   Navigator.of(context).pop();
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Seleccione una imagen')),
+                                    SnackBar(
+                                        content: Text('Seleccione una imagen')),
                                   );
                                 }
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('No se encontró el token')),
+                                  SnackBar(
+                                      content: Text('No se encontró el token')),
                                 );
                               }
                             } catch (e) {
+                              print('Error creating report: $e');
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error al crear el reporte: $e')),
+                                SnackBar(
+                                    content:
+                                        Text('Error al crear el reporte: $e')),
                               );
                             }
                           }
