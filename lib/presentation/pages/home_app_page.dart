@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'dart:typed_data';
 import '../widgets/SharedBottomNavigationBar.dart';
 import 'package:photo_view/photo_view.dart';
@@ -128,7 +129,20 @@ class _HomeAppPageState extends State<HomeAppPage> {
                   IconButton(
                     icon: Icon(Icons.exit_to_app),
                     onPressed: () {
-                      Navigator.of(context).pushReplacementNamed('/');
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.warning,
+                        animType: AnimType.bottomSlide,
+                        title: 'Cerrar Sesión',
+                        desc: '¿Está seguro que desea cerrar sesión?',
+                        btnCancelOnPress: () {},
+                        btnOkOnPress: () async {
+                          await secureStorage.deleteUserInfo();
+                          Navigator.of(context).pushReplacementNamed('/');
+                        },
+                        btnCancelText: 'Cancelar',
+                        btnOkText: 'Sí, cerrar sesión',
+                      )..show();
                     },
                     tooltip: 'Cerrar sesión',
                   ),

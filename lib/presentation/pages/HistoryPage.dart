@@ -1,5 +1,6 @@
 import 'package:ecoreporte/domain/entities/report_summary.dart';
 import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:ecoreporte/utils/secure_storage.dart';
@@ -18,15 +19,13 @@ class _HistoryPageState extends State<HistoryPage> {
   final secureStorage = SecureStorage();
   Map<String, String> reportStatuses = {};
 
-  Future<List<ReportSummary>> _fetchReports(
-      BuildContext context, String token) async {
-    final reportRepository =
-        Provider.of<ReportRepositoryImpl>(context, listen: false);
+  Future<List<ReportSummary>> _fetchReports(BuildContext context, String token) async {
+    final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
     return reportRepository.fetchReports(token);
   }
 
-  void _editReport(BuildContext context, ReportSummary report) {
-    showDialog(
+  void _editReport(BuildContext context, ReportSummary report) async {
+    final newStatus = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Editar Reporte'),
@@ -35,8 +34,8 @@ class _HistoryPageState extends State<HistoryPage> {
           children: [
             Text('Cambiar estado del reporte:'),
             DropdownButton<String>(
-              value: reportStatuses[report.id] ?? 'pendiente',
-              items: ['pendiente', 'realizado'].map((String value) {
+              value: report.estatus,
+              items: ['pendiente', 'en_proceso', 'completado', 'cancelado'].map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
@@ -44,10 +43,7 @@ class _HistoryPageState extends State<HistoryPage> {
               }).toList(),
               onChanged: (String? newValue) {
                 if (newValue != null) {
-                  setState(() {
-                    reportStatuses[report.id] = newValue;
-                  });
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(newValue);
                 }
               },
             ),
@@ -55,50 +51,65 @@ class _HistoryPageState extends State<HistoryPage> {
         ),
       ),
     );
-  }
 
-  void _deleteReport(BuildContext context, ReportSummary report) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Eliminar Reporte'),
-        content: Text(
-            '¿Estás seguro de que quieres eliminar el reporte "${report.tituloReporte}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
+    if (newStatus != null && newStatus != report.estatus) {
       try {
-        final reportRepository =
-            Provider.of<ReportRepositoryImpl>(context, listen: false);
+        final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
         final token = await secureStorage.getToken();
         if (token == null) {
           throw Exception('No se pudo obtener el token');
         }
-        await reportRepository.deleteReport(report.id, token,
-            tituloReporte: report.tituloReporte);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reporte eliminado exitosamente')),
-        );
-        setState(() {
-          reportStatuses.remove(report.id);
-        });
+        await reportRepository.updateReportStatus(report.id, newStatus, token);
+        setState(() {}); // Refresh the list
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al eliminar el reporte: $e')),
+          SnackBar(content: Text('Error al actualizar el estado: $e')),
         );
       }
     }
+  }
+
+  void _deleteReport(BuildContext context, ReportSummary report) {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.warning,
+      animType: AnimType.scale,
+      title: 'Eliminar Reporte',
+      desc: '¿Estás seguro de que quieres eliminar el reporte "${report.tituloReporte}"?',
+      btnCancelOnPress: () {},
+      btnOkOnPress: () async {
+        try {
+          final reportRepository = Provider.of<ReportRepositoryImpl>(context, listen: false);
+          final token = await secureStorage.getToken();
+          if (token == null) {
+            throw Exception('No se pudo obtener el token');
+          }
+          await reportRepository.deleteReport(report.id, token, tituloReporte: report.tituloReporte);
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.bottomSlide,
+            title: 'Éxito',
+            desc: 'Reporte eliminado exitosamente',
+            btnOkOnPress: () {
+              setState(() {
+                reportStatuses.remove(report.id);
+              });
+            },
+          )..show();
+        } catch (e) {
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            animType: AnimType.rightSlide,
+            title: 'Error',
+            desc: 'Error al eliminar el reporte: $e',
+            btnOkOnPress: () {},
+            btnOkColor: Colors.red,
+          )..show();
+        }
+      },
+    )..show();
   }
 
   Future<void> _launchURL(String url) async {
@@ -152,10 +163,22 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
               IconButton(
                 icon: Icon(Icons.exit_to_app),
-                onPressed: () async {
-                  await secureStorage.deleteUserInfo();
-                  BlocProvider.of<AuthenticationBloc>(context).add(LoggedOut());
-                  Navigator.of(context).pushReplacementNamed('/');
+                onPressed: () {
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.warning,
+                    animType: AnimType.bottomSlide,
+                    title: 'Cerrar Sesión',
+                    desc: '¿Está seguro que desea cerrar sesión?',
+                    btnCancelOnPress: () {},
+                    btnOkOnPress: () async {
+                      await secureStorage.deleteUserInfo();
+                      BlocProvider.of<AuthenticationBloc>(context).add(LoggedOut());
+                      Navigator.of(context).pushReplacementNamed('/');
+                    },
+                    btnCancelText: 'Cancelar',
+                    btnOkText: 'Sí, cerrar sesión',
+                  )..show();
                 },
                 tooltip: 'Cerrar sesión',
               ),
@@ -184,70 +207,71 @@ class _HistoryPageState extends State<HistoryPage> {
                 } else {
                   final token = tokenSnapshot.data!;
                   return FutureBuilder<List<ReportSummary>>(
-                    future: _fetchReports(context, token),
+                    future: Provider.of<ReportRepositoryImpl>(context, listen: false).fetchReports(token),
                     builder: (context, reportSnapshot) {
-                      if (reportSnapshot.connectionState ==
-                          ConnectionState.waiting) {
+                      if (reportSnapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       } else if (reportSnapshot.hasError) {
-                        return Center(
-                            child: Text('Error: ${reportSnapshot.error}'));
-                      } else if (!reportSnapshot.hasData ||
-                          reportSnapshot.data!.isEmpty) {
-                        return Center(
-                            child: Text('No se encontraron reportes'));
+                        return Center(child: Text('Error: ${reportSnapshot.error}'));
+                      } else if (!reportSnapshot.hasData || reportSnapshot.data!.isEmpty) {
+                        return Center(child: Text('No se encontraron reportes'));
                       } else {
                         final reports = reportSnapshot.data!;
-                        return ListView.builder(
-                          itemCount: reports.length,
-                          itemBuilder: (context, index) {
-                            final report = reports[index];
-                            return Card(
-                              margin: EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ListTile(
-                                    title: Text(
-                                      report.tituloReporte,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Text(
-                                        'Estatus: ${reportStatuses[report.id] ?? 'pendiente'}'),
-                                    trailing: role == 'admin'
-                                        ? Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              IconButton(
-                                                icon: Icon(Icons.edit,
-                                                    color: Colors.blue),
-                                                onPressed: () => _editReport(
-                                                    context, report),
-                                              ),
-                                              IconButton(
-                                                icon: Icon(Icons.delete,
-                                                    color: Colors.red),
-                                                onPressed: () => _deleteReport(
-                                                    context, report),
-                                              ),
-                                            ],
-                                          )
-                                        : null,
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        left: 16, right: 16, bottom: 16),
-                                    child: GestureDetector(
-                                      onTap: () => _launchURL(report.pdfUrl),
-                                      child: _buildViewPDFButton(),
-                                    ),
-                                  ),
-                                ],
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                'Historial de Reporte',
+                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                               ),
-                            );
-                          },
+                            ),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: reports.length,
+                                itemBuilder: (context, index) {
+                                  final report = reports[index];
+                                  return Card(
+                                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ListTile(
+                                          title: Text(
+                                            report.tituloReporte,
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          subtitle: Text('Estatus: ${report.estatus}'),
+                                          trailing: role == 'admin'
+                                              ? Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(Icons.edit, color: Colors.blue),
+                                                      onPressed: () => _editReport(context, report),
+                                                    ),
+                                                    IconButton(
+                                                      icon: Icon(Icons.delete, color: Colors.red),
+                                                      onPressed: () => _deleteReport(context, report),
+                                                    ),
+                                                  ],
+                                                )
+                                              : null,
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                                          child: GestureDetector(
+                                            onTap: () => _launchURL(report.pdfUrl),
+                                            child: _buildViewPDFButton(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         );
                       }
                     },

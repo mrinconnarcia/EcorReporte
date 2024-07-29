@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:ecoreporte/domain/entities/report.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ecoreporte/data/repositories/report_repository_impl.dart';
@@ -77,9 +78,21 @@ class _AddReportPageState extends State<AddReportPage> {
               ),
               IconButton(
                 icon: Icon(Icons.exit_to_app),
-                onPressed: () async {
-                  await secureStorage.deleteUserInfo();
-                  Navigator.of(context).pushReplacementNamed('/');
+                onPressed: () {
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.warning,
+                    animType: AnimType.bottomSlide,
+                    title: 'Cerrar Sesión',
+                    desc: '¿Está seguro que desea cerrar sesión?',
+                    btnCancelOnPress: () {},
+                    btnOkOnPress: () async {
+                      await secureStorage.deleteUserInfo();
+                      Navigator.of(context).pushReplacementNamed('/');
+                    },
+                    btnCancelText: 'Cancelar',
+                    btnOkText: 'Sí, cerrar sesión',
+                  )..show();
                 },
                 tooltip: 'Cerrar sesión',
               ),
@@ -100,33 +113,53 @@ class _AddReportPageState extends State<AddReportPage> {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 24),
-                buildInputField(Icons.title, 'Título del Reporte', _titleController),
+                buildInputField(
+                    Icons.title, 'Título del Reporte', _titleController),
                 SizedBox(height: 16),
-                buildDropdownField(Icons.category, 'Tipo de Incidente', _typeController),
+                buildDropdownField(
+                    Icons.category, 'Tipo de Incidente', _typeController),
                 SizedBox(height: 16),
-                buildInputField(Icons.description, 'Descripción del Incidente', _descriptionController, maxLines: 3),
+                buildInputField(Icons.description, 'Descripción del Incidente',
+                    _descriptionController,
+                    maxLines: 3),
                 SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: buildInputField(Icons.place, 'Lugar del Incidente', _placeController)),
+                    Expanded(
+                        child: buildInputField(Icons.place,
+                            'Lugar del Incidente', _placeController)),
                     SizedBox(width: 16),
-                    Expanded(child: buildInputField(Icons.location_city, 'Código Postal', _postalCodeController)),
+                    Expanded(
+                        child: buildInputField(Icons.location_city,
+                            'Código Postal', _postalCodeController)),
                   ],
                 ),
                 SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: buildInputField(Icons.person, 'Nombres', _namesController, readOnly: true)),
+                    Expanded(
+                        child: buildInputField(
+                            Icons.person, 'Nombres', _namesController,
+                            readOnly: true)),
                     SizedBox(width: 16),
-                    Expanded(child: buildInputField(Icons.person_outline, 'Apellidos', _lastNameController, readOnly: true)),
+                    Expanded(
+                        child: buildInputField(Icons.person_outline,
+                            'Apellidos', _lastNameController,
+                            readOnly: true)),
                   ],
                 ),
                 SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: buildInputField(Icons.phone, 'Teléfono', _phoneController, readOnly: true)),
+                    Expanded(
+                        child: buildInputField(
+                            Icons.phone, 'Teléfono', _phoneController,
+                            readOnly: true)),
                     SizedBox(width: 16),
-                    Expanded(child: buildInputField(Icons.email, 'Correo Electrónico', _emailController, readOnly: true)),
+                    Expanded(
+                        child: buildInputField(
+                            Icons.email, 'Correo Electrónico', _emailController,
+                            readOnly: true)),
                   ],
                 ),
                 SizedBox(height: 24),
@@ -177,25 +210,49 @@ class _AddReportPageState extends State<AddReportPage> {
                             if (_selectedFile != null) {
                               await reportRepository.createReport(
                                   report, _selectedFile!.path, token);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Reporte creado exitosamente')),
-                              );
-                              Navigator.of(context).pushReplacementNamed('/home-app');
+                              AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.success,
+                                animType: AnimType.bottomSlide,
+                                title: 'Éxito',
+                                desc: 'Reporte creado exitosamente',
+                                btnOkOnPress: () {
+                                  Navigator.of(context)
+                                      .pushReplacementNamed('/history');
+                                },
+                              )..show();
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Seleccione una imagen')),
-                              );
+                              AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.warning,
+                                animType: AnimType.topSlide,
+                                title: 'Advertencia',
+                                desc: 'Seleccione una imagen',
+                                btnOkOnPress: () {},
+                                btnOkColor: Colors.orange,
+                              )..show();
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('No se encontró el token')),
-                            );
+                            AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.error,
+                              animType: AnimType.rightSlide,
+                              title: 'Error',
+                              desc: 'No se encontró el token',
+                              btnOkOnPress: () {},
+                              btnOkColor: Colors.red,
+                            )..show();
                           }
                         } catch (e) {
-                          print('Error creating report: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al crear el reporte: $e')),
-                          );
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.error,
+                            animType: AnimType.rightSlide,
+                            title: 'Error',
+                            desc: 'Error al crear el reporte: $e',
+                            btnOkOnPress: () {},
+                            btnOkColor: Colors.red,
+                          )..show();
                         }
                       }
                     },
@@ -234,7 +291,9 @@ class _AddReportPageState extends State<AddReportPage> {
     );
   }
 
-  Widget buildInputField(IconData icon, String label, TextEditingController controller, {bool readOnly = false, int maxLines = 1}) {
+  Widget buildInputField(
+      IconData icon, String label, TextEditingController controller,
+      {bool readOnly = false, int maxLines = 1}) {
     return TextFormField(
       controller: controller,
       readOnly: readOnly,
@@ -258,7 +317,8 @@ class _AddReportPageState extends State<AddReportPage> {
     );
   }
 
-  Widget buildDropdownField(IconData icon, String label, TextEditingController controller) {
+  Widget buildDropdownField(
+      IconData icon, String label, TextEditingController controller) {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         labelText: label,
@@ -271,11 +331,14 @@ class _AddReportPageState extends State<AddReportPage> {
         fillColor: Colors.grey[200],
       ),
       items: [
-        DropdownMenuItem(value: 'deforestacion', child: Text('Deforestación')),
-        DropdownMenuItem(value: 'contaminacion_agua', child: Text('Contaminación del Agua')),
-        DropdownMenuItem(value: 'contaminacion_aire', child: Text('Contaminación del Aire')),
-        DropdownMenuItem(value: 'residuos_solidos', child: Text('Basura')),
-        DropdownMenuItem(value: 'plantas_animales', child: Text('Plantas y/o animales')),
+        DropdownMenuItem(value: 'Deforestación', child: Text('Deforestación')),
+        DropdownMenuItem(
+            value: 'Contaminación del Agua', child: Text('Contaminación del Agua')),
+        DropdownMenuItem(
+            value: 'Contaminación del Aire', child: Text('Contaminación del Aire')),
+        DropdownMenuItem(value: 'Basura', child: Text('Basura')),
+        DropdownMenuItem(
+            value: 'Plantas y/o animales', child: Text('Plantas y/o animales')),
       ],
       onChanged: (value) {
         controller.text = value ?? '';

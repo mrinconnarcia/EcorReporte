@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import '../../domain/entities/info.dart';
 
@@ -37,6 +36,59 @@ class InfoRepositoryImpl {
 
     if (response.statusCode != 201) {
       throw Exception('Failed to create content: ${response.statusMessage}');
+    }
+  }
+
+  Future<Info> getContentByCode(String code, String token) async {
+    final response = await _dio.get(
+      '$baseUrl/code/$code',
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return Info.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load content: ${response.statusMessage}');
+    }
+  }
+
+  Future<void> updateContent(
+      int id, Map<String, dynamic> updateData, String token) async {
+    try {
+      final response = await _dio.put(
+        '$baseUrl/$id',
+        data: updateData,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print('Content updated successfully');
+      } else {
+        throw Exception('Failed to update content: ${response.statusMessage}');
+      }
+    } catch (e) {
+      print('Error updating content: $e');
+      throw Exception('Error updating content: $e');
+    }
+  }
+
+  Future<void> deleteContent(int id, String token) async {
+    final response = await _dio.delete(
+      '$baseUrl/$id',
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+      ),
+    );
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete content: ${response.statusMessage}');
     }
   }
 

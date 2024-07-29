@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import '../bloc/authentication_bloc.dart';
 import '../bloc/authentication_event.dart';
 import '../bloc/authentication_state.dart';
-import '../../domain/repositories/user_repository.dart';
 import '../../utils/secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,8 +16,16 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscureText = true;
-  String? _emailError;
-  String? _passwordError;
+
+  @override
+  void initState() {
+    super.initState();
+    _disableScreenshots();
+  }
+
+  void _disableScreenshots() async {
+    await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+  }
 
   bool isEmailValid(String email) {
     final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
@@ -25,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   bool isPasswordValid(String password) {
-    return password.length >= 6; 
+    return password.length >= 6;
   }
 
   void saveToken(String token) async {
@@ -65,7 +73,8 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Text(
                         'Iniciar sesión',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 30),
@@ -73,11 +82,13 @@ class _LoginPageState extends State<LoginPage> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          errorText: _emailError,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
+                        keyboardType: TextInputType.emailAddress,
+                        autocorrect: false,
+                        enableSuggestions: false,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su email';
@@ -92,12 +103,13 @@ class _LoginPageState extends State<LoginPage> {
                         controller: _passwordController,
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          errorText: _passwordError,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                            icon: Icon(_obscureText
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                             onPressed: () {
                               setState(() {
                                 _obscureText = !_obscureText;
@@ -106,6 +118,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         obscureText: _obscureText,
+                        autocorrect: false,
+                        enableSuggestions: false,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor ingrese su contraseña';

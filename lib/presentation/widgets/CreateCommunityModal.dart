@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:math';
 import '../../data/repositories/community_repository_impl.dart';
 
 class CreateCommunityModal extends StatefulWidget {
+  final VoidCallback onCommunityCreated;
+
+  CreateCommunityModal({required this.onCommunityCreated});
+
   @override
   _CreateCommunityModalState createState() => _CreateCommunityModalState();
 }
@@ -11,6 +17,20 @@ class _CreateCommunityModalState extends State<CreateCommunityModal> {
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
   final CommunityRepositoryImpl _communityRepository = CommunityRepositoryImpl();
+
+  @override
+  void initState() {
+    super.initState();
+    _generateRandomCode();
+  }
+
+  void _generateRandomCode() {
+    final random = Random.secure();
+    final values = List<int>.generate(32, (i) => random.nextInt(256));
+    final hash = sha256.convert(values);
+    final code = hash.bytes.sublist(0, 3).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
+    _codeController.text = code;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +53,18 @@ class _CreateCommunityModalState extends State<CreateCommunityModal> {
             ),
             TextFormField(
               controller: _codeController,
-              decoration: InputDecoration(labelText: 'Código de la Comunidad'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingrese un código';
-                }
-                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
-                  return 'El código debe contener solo letras y números';
-                }
-                return null;
-              },
+              decoration: InputDecoration(
+                labelText: 'Código de la Comunidad',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.refresh),
+                  onPressed: () {
+                    setState(() {
+                      _generateRandomCode();
+                    });
+                  },
+                ),
+              ),
+              readOnly: true,
             ),
           ],
         ),
@@ -62,6 +84,7 @@ class _CreateCommunityModalState extends State<CreateCommunityModal> {
                 );
                 if (success) {
                   Navigator.of(context).pop();
+                  widget.onCommunityCreated();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Comunidad creada exitosamente')),
                   );

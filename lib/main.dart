@@ -1,6 +1,5 @@
 import 'package:ecoreporte/data/repositories/community_repository_impl.dart';
 import 'package:ecoreporte/data/repositories/report_repository_impl.dart';
-import 'package:ecoreporte/utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';

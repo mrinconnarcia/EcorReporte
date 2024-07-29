@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'authentication_event.dart';
 import 'authentication_state.dart';
 import '../../domain/repositories/user_repository.dart';
-import '../../data/repositories/user_repository_impl.dart';
 import '../../utils/secure_storage.dart';
 
 class AuthenticationBloc

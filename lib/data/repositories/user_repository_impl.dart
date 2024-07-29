@@ -4,10 +4,18 @@ import '../../utils/secure_storage.dart';
 import '../../domain/repositories/user_repository.dart';
 
 class UserRepositoryImpl implements UserRepository {
-  final SecureStorage secureStorage = SecureStorage(); 
+  final SecureStorage secureStorage = SecureStorage();
 
   @override
-  Future<bool> register(String name, String lastName, String email, String password, String role, String gender, String phone, String code) async {
+  Future<bool> register(
+      String name,
+      String lastName,
+      String email,
+      String password,
+      String role,
+      String gender,
+      String phone,
+      String code) async {
     final response = await http.post(
       Uri.parse('http://54.225.155.228:3001/user/register'),
       headers: <String, String>{
@@ -20,7 +28,7 @@ class UserRepositoryImpl implements UserRepository {
         'password': password,
         'role': role,
         'gender': gender,
-        'phone' : phone,
+        'phone': phone,
         'code': code
       }),
     );
@@ -34,8 +42,8 @@ class UserRepositoryImpl implements UserRepository {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
-      // Uri.parse('http://54.225.155.228:3001/login/auth'),
-      Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/login/auth'),
+      Uri.parse('http://54.225.155.228:3001/login/auth'),
+      // Uri.parse('https://gjhmw1vf-3001.use.devtunnels.ms/login/auth'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -57,15 +65,14 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 
-  @override
-  Future<Map<String, dynamic>> getUserData() async {
+  Future<Map<String, dynamic>> getUserDataByEmail(String email) async {
     String? token = await secureStorage.getToken();
     if (token == null) {
       throw Exception('No token found');
     }
 
     final response = await http.get(
-      Uri.parse('http://54.225.155.228:3001/user/profile'),
+      Uri.parse('http://54.225.155.228:3001/user/find-email/$email'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -78,6 +85,8 @@ class UserRepositoryImpl implements UserRepository {
       throw Exception('Failed to load user data');
     }
   }
+
+ 
 
   Future<bool> updateUser(Map<String, dynamic> userData) async {
     String? token = await secureStorage.getToken();
@@ -113,7 +122,7 @@ class UserRepositoryImpl implements UserRepository {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(<String, String>{ 'email': email }),
+      body: jsonEncode(<String, String>{'email': email}),
     );
 
     if (response.statusCode == 200) {

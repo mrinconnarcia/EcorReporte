@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:ecoreporte/domain/entities/report.dart';
 import 'package:ecoreporte/domain/entities/report_summary.dart';
-import '../../utils/secure_storage.dart';
 
 class ReportRepositoryImpl {
   // final String initialApiUrl = "http://54.225.155.228:3001/api/reporting/reports";
   final String initialApiUrl =
-      "https://t2zd2jpn-3003.usw3.devtunnels.ms/reports";
+      "https://reporting-service-3.onrender.com/reports";
 
   final Dio _dio = Dio();
 
@@ -79,36 +77,63 @@ class ReportRepositoryImpl {
   }
 
   Future<List<ReportSummary>> fetchReports(String token) async {
-    final response = await _dio.get(
-      '$initialApiUrl/pdf-list',
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      ),
-    );
+    try {
+      final response = await _dio.get(
+        '$initialApiUrl/pdf-list',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
 
-    if (response.statusCode == 200) {
-      List<dynamic> data = response.data;
-      return data.map((report) => ReportSummary.fromJson(report)).toList();
-    } else {
-      throw Exception('Error al cargar los reportes');
+      if (response.statusCode == 200) {
+        // Check if the response data is a String
+        if (response.data is String) {
+          // If it's a String, try to parse it as JSON
+          List<dynamic> jsonData = json.decode(response.data);
+          return jsonData
+              .map((report) => ReportSummary.fromJson(report))
+              .toList();
+        }
+        // If it's already a List, use it directly
+        else if (response.data is List) {
+          List<dynamic> data = response.data;
+          return data.map((report) => ReportSummary.fromJson(report)).toList();
+        }
+        // If it's neither a String nor a List, throw an error
+        else {
+          throw Exception('Unexpected response format');
+        }
+      } else {
+        throw Exception('Error al cargar los reportes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching reports: $e');
+      throw Exception('Failed to fetch reports: $e');
     }
   }
 
-  Future<void> updateReport(Report report) async {
-    final response = await _dio.put(
-      '$initialApiUrl/${report.id}',
-      data: report.toJson(),
-      options: Options(
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
+  Future<void> updateReportStatus(
+      String id, String status, String token) async {
+    try {
+      final response = await _dio.patch(
+        '$initialApiUrl/$id/status',
+        data: {'estatus': status},
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
 
-    if (response.statusCode != 200) {
-      throw Exception('Error al actualizar el reporte');
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar el estado del reporte');
+      }
+    } catch (e) {
+      print('Error updating report status: $e');
+      throw Exception('Failed to update report status: $e');
     }
   }
 

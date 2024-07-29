@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import '../bloc/authentication_bloc.dart';
 import '../bloc/authentication_event.dart';
 import '../bloc/authentication_state.dart';
@@ -39,60 +39,101 @@ class _RegisterPageState extends State<RegisterPage> {
     return regex.hasMatch(phone);
   }
 
-  void _showTermsAndConditions() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding:
-              EdgeInsets.fromLTRB(24.0, 20.0, 24.0, 0.0), // Ajuste de padding
-          title: Container(
-            padding: EdgeInsets.all(20.0), // Espaciado interior para el título
-            child: Text('Términos y Condiciones', textAlign: TextAlign.center),
-          ),
-          content: Container(
-            width: double.maxFinite, // Ancho máximo posible
-            constraints: BoxConstraints(
-                maxHeight:
-                    MediaQuery.of(context).size.height * 0.85), // Máximo alto
-            child: SingleChildScrollView(
-              child: Text(
-                '''Villazón Rico Leonardo Jesús, con  domicilio en Calle Francisco I Madero No. 55 Despacho 424 4to Piso Col. Centro Delegación  Cuauhtémoc  C.P. 06000 México Ciudad de México. Hace de su conocimiento que los datos personales de usted, que actualmente o en el futuro obren en nuestra base de datos, ya sea por formar parte de nuestro grupo de clientes o ser alguno de nuestros proveedores, serán tratados y/o utilizados por: Villazón Rico Leonardo Jesús, con el propósito de cumplir aquellas obligaciones que se derivan de la relación jurídica existente entre usted como titular de los datos personales y las empresa antes señalada.
-              Villazón Rico Leonardo Jesús en los  casos de excepción  previsto en el artículo 37 de la Ley Federal de Protección de Datos Personales en Posesión  de Particulares y en los artículos 18 fracción V, 21,22,23 y 24 de la Ley Federal para la Prevención e Identificación de Operaciones con Recursos de Procedencia Ilícita, podrá transferir sus datos personales, toda vez que los productos que Villazón Rico Leonardo Jesús comercializa son  considerados por esta Ley,  como actividades vulnerables y por tanto sujetas a dicha normatividad.
-              Los datos que almacenamos en nuestra base de datos serán tratados de conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares y su Reglamento, y la información está garantizada y protegida por medidas de seguridad administrativas, técnicas y físicas, para evitar su daño, pérdida, alteración, destrucción, uso, acceso o divulgación indebida. Para conocer dichos procedimientos se puede poner en  contacto con nosotros cullinans@hotmail.com y 5555120772.
-              Su información será utilizada para proporcionarle un  mejor servicio y, en particular por las siguientes razones:
-              Mantenimiento de registros internos y  alta de clientes.
-              Para mejorar nuestros productos  y servicios,
-              Para comunicarnos con usted por correo electrónico, teléfono si nos ha hecho pedidos o comprado productos, sea acerca del pedido o la compra u otros asuntos relacionados con transacciones entre nosotros o su relación como cliente nuestro.
-              Atender quejas y aclaraciones, y en su caso, tratarlos para fines compatibles con los mencionados en este Aviso de Privacidad y que se consideren análogos para efectos legales. En caso de formalizar con Usted la aceptación de algún producto o servicio ofrecido.  Sus datos serán utilizados para el cumplimiento de las obligaciones derivadas de esa relación jurídica.
-              Para proporcionar referencias comerciales.
-              Cuando usted solicite un crédito o financiamiento.
-              
-              Para las finalidades antes mencionadas, requerimos obtener los siguientes datos personales : Nombre Completo, empresa en la que labora, cargo que ocupa, correo electrónico, números telefónicos, Registro Federal de Contribuyentes, Domicilio fiscal y personal,  para procesar su solicitud de crédito  o financiamiento se le puede pedir referencias personales y comerciales.
-              No divulgaremos su información personal a terceros para sus propios propósitos de marketing.
+  // void _showTermsAndConditions() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         contentPadding:
+  //             EdgeInsets.fromLTRB(24.0, 20.0, 24.0, 0.0), // Ajuste de padding
+  //         title: Container(
+  //           padding: EdgeInsets.all(20.0), // Espaciado interior para el título
+  //           child: Text('Términos y Condiciones', textAlign: TextAlign.center),
+  //         ),
+  //         content: Container(
+  //           width: double.maxFinite, // Ancho máximo posible
+  //           constraints: BoxConstraints(
+  //               maxHeight:
+  //                   MediaQuery.of(context).size.height * 0.85), // Máximo alto
+  //           child: SingleChildScrollView(
+  //             child: Text(
+  //               '''Políticas de Privacidad de Eco-Reporte
 
-              Por otra parte, hacemos de su conocimiento que en cualquier momento podrá ejercer los derechos de acceso, rectificación, cancelación u oposición al tratamiento de sus Datos, presentando su solicitud a través del correo electrónico: cullinans@hotmail.com debiendo recabar el acuse de recibo correspondiente. Todas las solicitudes que sean presentadas a Villazón Rico Leonardo Jesús, independiente del medio utilizado por los titulares, deberán:
-              Incluir el nombre y firma autógrafa del titular, así como un domicilio u otro medio para comunicarle la respuesta a su solicitud.
-              Acompañar los documentos oficiales que acrediten la identidad de titular.
-              Incluir una descripción clara y precisa de los datos personales respecto de los cuales ejercitará los derechos que les confiere la Ley.
-              Incluir cualquier elemento o documento que facilite la localización de los datos personales de que se traten.
-              Se entenderá que usted como titular consiente tácitamente el tratamiento de sus datos personales conforme a lo enunciado en el presente aviso de privacidad, cuando habiéndolo puesto a su disposición, no manifieste su oposición. 
-              Villazón Rico Leonardo Jesús se reserva el derecho de cambiar, modificar, complementar y/o alterar el presente Aviso, en cualquier momento, en cuyo caso se hará de su conocimiento a través de cualquiera de los medios que establece la legislación en la materia.
-              ''',
-              ),
-            ),
+  //                 Eco-Reporte, con domicilio en Calle Sin Nombre, Sin Número, Colonia Distrito Federal, Chiapa de Corzo, Chiapas, 29179, México, y correo electrónico innobytesoftw@gmail.com, es responsable del uso y protección de sus datos personales.
+
+  //                 **Fines del uso de sus datos personales:**
+  //                 1. **Gestión y resolución de reportes ecológicos:** Para registrar reportes de problemas ecológicos y asignar los casos a las autoridades competentes.
+  //                 2. **Comunicación con autoridades y administradores:** Para mantener una comunicación eficiente sobre el estado de su reporte y responder consultas.
+  //                 3. **Seguimiento y actualización de reportes ecológicos:** Para monitorear el progreso y estado de los reportes.
+
+  //                 **Fines adicionales:**
+  //                 1. **Envío de información y material educativo:** Con su consentimiento, para enviarle boletines y material educativo sobre temas ecológicos.
+  //                 2. **Realización de encuestas:** Para mejorar nuestros servicios mediante encuestas y estudios de opinión.
+
+  //                 **Consulta del aviso de privacidad integral:**
+  //                 Para más información sobre el tratamiento de sus datos personales, puede consultar nuestro aviso de privacidad integral en:
+  //                 - **Página web:** [EcoReporte](https://eco-reporte-f44a0.web.app)
+  //                 - **Correo electrónico:** Solicitándolo a innobytesoftw@gmail.com
+  //                 - **Teléfono:** 9613315517
+  //                 - **Oficinas físicas:** Calle Sin Nombre, Sin Número, Colonia Distrito Federal, Chiapa de Corzo, Chiapas, 29179, México.
+
+  //                 Nos comprometemos a informarle sobre cualquier cambio significativo en nuestro aviso de privacidad. En caso de modificaciones, le notificaremos a través de los medios de contacto proporcionados y actualizaremos el documento en nuestra página web.
+  //                 ''',
+  //             ),
+  //           ),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: Text('Cerrar'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  void _showTermsAndConditions() {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.info,
+      animType: AnimType.scale,
+      title: 'Términos y Condiciones',
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            '''Políticas de Privacidad de Eco-Reporte
+
+            Eco-Reporte, con domicilio en Calle Sin Nombre, Sin Número, Colonia Distrito Federal, Chiapa de Corzo, Chiapas, 29179, México, y correo electrónico innobytesoftw@gmail.com, es responsable del uso y protección de sus datos personales.
+
+            Fines del uso de sus datos personales:
+            1. Gestión y resolución de reportes ecológicos: Para registrar reportes de problemas ecológicos y asignar los casos a las autoridades competentes.
+            2. Comunicación con autoridades y administradores: Para mantener una comunicación eficiente sobre el estado de su reporte y responder consultas.
+            3. Seguimiento y actualización de reportes ecológicos: Para monitorear el progreso y estado de los reportes.
+
+            Fines adicionales:
+            1. Envío de información y material educativo: Con su consentimiento, para enviarle boletines y material educativo sobre temas ecológicos.
+            2. Realización de encuestas: Para mejorar nuestros servicios mediante encuestas y estudios de opinión.
+
+            Consulta del aviso de privacidad integral:
+            Para más información sobre el tratamiento de sus datos personales, puede consultar nuestro aviso de privacidad integral en:
+            - Página web: EcoReporte (https://eco-reporte-f44a0.web.app)
+            - Correo electrónico: Solicitándolo a innobytesoftw@gmail.com
+            - Teléfono: 9613315517
+            - Oficinas físicas: Calle Sin Nombre, Sin Número, Colonia Distrito Federal, Chiapa de Corzo, Chiapas, 29179, México.
+
+            Nos comprometemos a informarle sobre cualquier cambio significativo en nuestro aviso de privacidad. En caso de modificaciones, le notificaremos a través de los medios de contacto proporcionados y actualizaremos el documento en nuestra página web.''',
+            style: TextStyle(fontSize: 14),
+            textAlign: TextAlign.justify,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cerrar'),
-            ),
-          ],
-        );
-      },
-    );
+        ),
+      ),
+      btnOkOnPress: () {},
+      btnOkText: 'Entendido',
+    )..show();
   }
 
   @override
@@ -107,28 +148,26 @@ class _RegisterPageState extends State<RegisterPage> {
       body: BlocListener<AuthenticationBloc, AuthenticationState>(
         listener: (context, state) {
           if (state is AuthenticationSuccess2) {
-            showDialog(
+            AwesomeDialog(
               context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Registro Exitoso'),
-                  content: Text('¡Te has registrado exitosamente!'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pushReplacementNamed('/login');
-                      },
-                      child: Text('OK'),
-                    ),
-                  ],
-                );
+              dialogType: DialogType.success,
+              animType: AnimType.bottomSlide,
+              title: 'Registro Exitoso',
+              desc: '¡Te has registrado exitosamente!',
+              btnOkOnPress: () {
+                Navigator.of(context).pushReplacementNamed('/login');
               },
-            );
+            )..show();
           } else if (state is AuthenticationFailure) {
-            setState(() {
-              _errorMessage = state.message;
-            });
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              animType: AnimType.rightSlide,
+              title: 'Error de Registro',
+              desc: state.message,
+              btnOkOnPress: () {},
+              btnOkColor: Colors.red,
+            )..show();
           }
         },
         child: FocusScope(

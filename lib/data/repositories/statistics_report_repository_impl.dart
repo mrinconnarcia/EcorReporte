@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import '../../utils/secure_storage.dart';
 
 class StatisticsReportRepositoryImpl {
-  final String baseUrl = 'https://t2zd2jpn-3003.usw3.devtunnels.ms';
+  final String baseUrl = 'https://reporting-service-3.onrender.com';
   final SecureStorage secureStorage = SecureStorage();
 
   Future<Uint8List> getPieChartImage() async {

@@ -1,5 +1,6 @@
 import 'package:ecoreporte/presentation/widgets/CreateCommunityModal.dart';
 import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/authentication_bloc.dart';
 import '../bloc/authentication_event.dart';
@@ -23,6 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController phoneController;
   late TextEditingController roleController;
   late TextEditingController genderController;
+  late TextEditingController codeController;
 
   @override
   void initState() {
@@ -33,21 +35,38 @@ class _ProfilePageState extends State<ProfilePage> {
     phoneController = TextEditingController();
     roleController = TextEditingController();
     genderController = TextEditingController();
-
+    codeController = TextEditingController();
     _loadUserData();
   }
 
   void _loadUserData() async {
     final userData = await secureStorage.getUserData();
-    print('Datos del usuario cargados: $userData'); // Debugging
-    setState(() {
-      nameController.text = userData?['name'] ?? '';
-      lastNameController.text = userData?['lastName'] ?? '';
-      emailController.text = userData?['email'] ?? '';
-      phoneController.text = userData?['phone'] ?? '';
-      roleController.text = userData?['role'] ?? '';
-      genderController.text = userData?['gender'] ?? '';
-    });
+    if (userData == null) {
+      print('No user data found in secure storage');
+      return;
+    }
+
+    String? email = userData['email'];
+    if (email == null) {
+      print('No email found in user data');
+      return;
+    }
+
+    try {
+      final userDataFromApi = await userRepository.getUserDataByEmail(email);
+      print('Datos del usuario cargados: $userDataFromApi'); // Debugging
+      setState(() {
+        nameController.text = userDataFromApi['name'] ?? '';
+        lastNameController.text = userDataFromApi['lastName'] ?? '';
+        emailController.text = userDataFromApi['email'] ?? '';
+        phoneController.text = userDataFromApi['phone'] ?? '';
+        roleController.text = userDataFromApi['role'] ?? '';
+        genderController.text = userDataFromApi['gender'] ?? '';
+        codeController.text = userDataFromApi['code'] ?? '';
+      });
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
   }
 
   @override
@@ -56,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: secureStorage.getUserData(),
+        future: userRepository.getUserDataByEmail(emailController.text),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -88,10 +107,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         IconButton(
                           icon: Icon(Icons.exit_to_app),
-                          onPressed: () async {
-                            await secureStorage.deleteUserInfo();
-                            authenticationBloc.add(LoggedOut());
-                            Navigator.of(context).pushReplacementNamed('/');
+                          onPressed: () {
+                            AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.warning,
+                              animType: AnimType.bottomSlide,
+                              title: 'Cerrar Sesión',
+                              desc: '¿Está seguro que desea cerrar sesión?',
+                              btnCancelOnPress: () {},
+                              btnOkOnPress: () async {
+                                await secureStorage.deleteUserInfo();
+                                authenticationBloc.add(LoggedOut());
+                                Navigator.of(context).pushReplacementNamed('/');
+                              },
+                              btnCancelText: 'Cancelar',
+                              btnOkText: 'Sí, cerrar sesión',
+                            )..show();
                           },
                           tooltip: 'Cerrar sesión',
                         ),
@@ -106,8 +137,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           Text('Hola!',
                               style: TextStyle(
                                   fontSize: 24, fontWeight: FontWeight.bold)),
-                          Text('Bienvenido, ${userData['name']}',
+                          Text('Bienvenido, ${userData['name']} ',
                               style: TextStyle(fontSize: 18)),
+                          Text(
+                            'Tu codigo de comunidad es: ${userData['code']}',
+                            style: TextStyle(fontSize: 18),
+                          ),
                           SizedBox(height: 20),
                           _buildEditableInfoRow('Nombre', nameController),
                           _buildEditableInfoRow(
@@ -163,7 +198,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               onPressed: () {
                                 showDialog(
                                   context: context,
-                                  builder: (context) => CreateCommunityModal(),
+                                  builder: (context) => CreateCommunityModal(
+                                    onCommunityCreated: _loadUserData,
+                                  ),
                                 );
                               },
                               child: Text('Crear Comunidad'),
