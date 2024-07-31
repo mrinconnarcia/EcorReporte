@@ -39,27 +39,52 @@ class InfoRepositoryImpl {
     }
   }
 
-  Future<Info> getContentByCode(String code, String token) async {
-    final response = await _dio.get(
-      '$baseUrl/code/$code',
-      options: Options(
-        headers: {'Authorization': 'Bearer $token'},
-      ),
-    );
+  Future<Info?> getContentByCode(String code, String token) async {
+    try {
+      final response = await _dio.get(
+        '$baseUrl/code/$code',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
 
-    if (response.statusCode == 200) {
-      return Info.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load content: ${response.statusMessage}');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        return Info.fromJson(data);
+      } else {
+        throw Exception('Failed to load content');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return null;
+      } else {
+        throw Exception('Failed to load content: ${e.message}');
+      }
     }
   }
+
+  // Future<List<Info>> getAllContentByCode(String code, String token) async {
+  //   final response = await _dio.get(
+  //     '$baseUrl/code/$code/all',
+  //     options: Options(
+  //       headers: {'Authorization': 'Bearer $token'},
+  //     ),
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     List<dynamic> jsonList = response.data;
+  //     return jsonList.map((json) => Info.fromJson(json)).toList();
+  //   } else {
+  //     throw Exception('Failed to load content: ${response.statusMessage}');
+  //   }
+  // }
 
   Future<void> updateContent(
       int id, Map<String, dynamic> updateData, String token) async {
     try {
       final response = await _dio.put(
         '$baseUrl/$id',
-        data: updateData,
+        data: jsonEncode(updateData), // Convertimos los datos a JSON
         options: Options(
           headers: {
             'Content-Type': 'application/json',

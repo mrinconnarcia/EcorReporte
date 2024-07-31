@@ -99,42 +99,45 @@ class _InfoAppPageState extends State<InfoAppPage> {
   }
 
   Widget _buildEducationalContent(String token) {
-    return FutureBuilder<List<Info>>(
-      future: infoRepository.getAllContent(token),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _getEducationalContent(token),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No hay contenido educativo disponible'));
+        } else if (!snapshot.hasData || snapshot.data!['content'].isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.info_outline, size: 50, color: Colors.grey),
+                SizedBox(height: 16),
+                Text(
+                  'No hay contenido disponible por el momento',
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
         } else {
+          final contentList = snapshot.data!['content'] as List<Info>;
           return Column(
             children: [
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Buscar tu comunidad por código',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onSubmitted: (value) => _searchByCode(context, token, value),
-                ),
-              ),
               Expanded(
                 child: ListView.builder(
-                  itemCount: snapshot.data!.length,
+                  itemCount: contentList.length,
                   itemBuilder: (context, index) {
-                    final content = snapshot.data![index];
+                    final content = contentList[index];
                     return InfoCard(
                       content: content,
                       onTap: () => _navigateToDetailPage(context, content),
                       userRole: userRole,
-                      onEdit: () => _showUpdateContentModal(context, token, content, content.id),
-                      onDelete: () => _showDeleteConfirmationDialog(context, token, content.id),
+                      onEdit: () => _showUpdateContentModal(
+                          context, token, content, content.id),
+                      onDelete: () => _showDeleteConfirmationDialog(
+                          context, token, content.id),
                     );
                   },
                 ),
@@ -146,6 +149,24 @@ class _InfoAppPageState extends State<InfoAppPage> {
     );
   }
 
+  // Future<Map<String, dynamic>> _getEducationalContent(String token) async {
+  //   final userData = await secureStorage.getUserData();
+  //   final code = userData?['code'] ?? '';
+  //   final content = await infoRepository.getContentByCode(code, token);
+  //   return {
+  //     'content': content != null ? [content] : []
+  //   };
+  // }
+
+  Future<Map<String, dynamic>> _getEducationalContent(String token) async {
+    final userData = await secureStorage.getUserData();
+    final code = userData?['code'] ?? '';
+    final content = await infoRepository.getContentByCode(code, token);
+    return {
+      'content': content != null ? [content] : []
+    };
+  }
+
   void _navigateToDetailPage(BuildContext context, Info content) {
     Navigator.push(
       context,
@@ -155,11 +176,15 @@ class _InfoAppPageState extends State<InfoAppPage> {
     );
   }
 
-  void _showCreateContentModal(BuildContext context, String token) {
+  void _showCreateContentModal(BuildContext context, String token) async {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final contentController = TextEditingController();
     final codeController = TextEditingController();
+
+    final userData = await secureStorage.getUserData();
+    final code = userData?['code'] ?? '';
+    codeController.text = code;
 
     showModalBottomSheet(
       context: context,
@@ -180,7 +205,8 @@ class _InfoAppPageState extends State<InfoAppPage> {
                   children: [
                     Text(
                       'Crear Nuevo Contenido',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 20),
                     TextField(
@@ -199,6 +225,7 @@ class _InfoAppPageState extends State<InfoAppPage> {
                     TextField(
                       controller: codeController,
                       decoration: InputDecoration(labelText: 'Código'),
+                      readOnly: true, // Hacer que el campo sea de solo lectura
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
@@ -228,17 +255,21 @@ class _InfoAppPageState extends State<InfoAppPage> {
                                   'description': descriptionController.text,
                                   'content': contentController.text,
                                   'code': codeController.text,
-                                  'image': await MultipartFile.fromFile(_selectedImage!.path),
+                                  'image': await MultipartFile.fromFile(
+                                      _selectedImage!.path),
                                 });
 
-                                await infoRepository.createContent(formData, token);
+                                await infoRepository.createContent(
+                                    formData, token);
                                 Navigator.pop(context);
                                 setState(() {});
                               } catch (e) {
-                                _showErrorDialog('Error al crear el contenido: $e');
+                                _showErrorDialog(
+                                    'Error al crear el contenido: $e');
                               }
                             } else {
-                              _showErrorDialog('Por favor, seleccione una imagen');
+                              _showErrorDialog(
+                                  'Por favor, seleccione una imagen');
                             }
                           },
                         ),
@@ -255,9 +286,11 @@ class _InfoAppPageState extends State<InfoAppPage> {
     );
   }
 
-  void _showUpdateContentModal(BuildContext context, String token, Info content, int contentId) {
+  void _showUpdateContentModal(
+      BuildContext context, String token, Info content, int contentId) {
     final titleController = TextEditingController(text: content.title);
-    final descriptionController = TextEditingController(text: content.description);
+    final descriptionController =
+        TextEditingController(text: content.description);
     final contentController = TextEditingController(text: content.content);
 
     showModalBottomSheet(
@@ -310,12 +343,17 @@ class _InfoAppPageState extends State<InfoAppPage> {
                           'content': contentController.text,
                         };
 
+                        print(
+                            'Datos a actualizar: $updateData con id $contentId');
+
                         try {
-                          await infoRepository.updateContent(contentId, updateData, token);
+                          await infoRepository.updateContent(
+                              contentId, updateData, token);
                           Navigator.pop(context);
                           setState(() {});
                         } catch (e) {
-                          _showErrorDialog('Error al actualizar el contenido: $e');
+                          _showErrorDialog(
+                              'Error al actualizar el contenido: $e');
                         }
                       },
                     ),
@@ -330,7 +368,8 @@ class _InfoAppPageState extends State<InfoAppPage> {
     );
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, String token, int contentId) {
+  void _showDeleteConfirmationDialog(
+      BuildContext context, String token, int contentId) {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.warning,
@@ -349,14 +388,14 @@ class _InfoAppPageState extends State<InfoAppPage> {
     )..show();
   }
 
-  void _searchByCode(BuildContext context, String token, String code) async {
-    try {
-      final content = await infoRepository.getContentByCode(code, token);
-      _navigateToDetailPage(context, content);
-    } catch (e) {
-      _showErrorDialog('Error al buscar el contenido: $e');
-    }
-  }
+  // void _searchByCode(BuildContext context, String token, String code) async {
+  //   try {
+  //     final content = await infoRepository.getContentByCode(code, token);
+  //     _navigateToDetailPage(context, content);
+  //   } catch (e) {
+  //     _showErrorDialog('Error al buscar el contenido: $e');
+  //   }
+  // }
 
   void _showErrorDialog(String message) {
     AwesomeDialog(
@@ -388,7 +427,8 @@ class _InfoAppPageState extends State<InfoAppPage> {
   }
 
   Future<void> _pickImage() async {
-    final pickedImage = await ImagePicker().getImage(source: ImageSource.gallery);
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedImage != null) {
       setState(() {
         _selectedImage = File(pickedImage.path);

@@ -4,7 +4,7 @@ import 'dart:math';
 import '../../data/repositories/community_repository_impl.dart';
 
 class CreateCommunityModal extends StatefulWidget {
-  final VoidCallback onCommunityCreated;
+  final Function(String) onCommunityCreated; // Cambiado a Function(String) para pasar el código
 
   CreateCommunityModal({required this.onCommunityCreated});
 
@@ -84,7 +84,7 @@ class _CreateCommunityModalState extends State<CreateCommunityModal> {
                 );
                 if (success) {
                   Navigator.of(context).pop();
-                  widget.onCommunityCreated();
+                  widget.onCommunityCreated(_codeController.text); // Pasar el código creado
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Comunidad creada exitosamente')),
                   );

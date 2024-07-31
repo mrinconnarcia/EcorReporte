@@ -69,6 +69,33 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _updateUserWithNewCode(String newCode) async {
+    final updatedUserData = {
+      'name': nameController.text,
+      'lastName': lastNameController.text,
+      'email': emailController.text,
+      'phone': phoneController.text,
+      'role': roleController.text,
+      'gender': genderController.text,
+      'code': newCode,
+    };
+
+    bool success = await userRepository.updateUser(updatedUserData);
+    if (success) {
+      await secureStorage.saveUserData(updatedUserData);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Código de comunidad actualizado exitosamente')),
+      );
+      // Reload user data to reflect the new code
+      _loadUserData();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar el código de comunidad')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
@@ -169,7 +196,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                 bool success = await userRepository
                                     .updateUser(updatedUserData);
                                 if (success) {
-                                  // Guardar los datos actualizados en el almacenamiento seguro
                                   await secureStorage
                                       .saveUserData(updatedUserData);
 
@@ -178,6 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         content: Text(
                                             'Cuenta actualizada exitosamente')),
                                   );
+                                  _loadUserData();
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -199,7 +226,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 showDialog(
                                   context: context,
                                   builder: (context) => CreateCommunityModal(
-                                    onCommunityCreated: _loadUserData,
+                                    onCommunityCreated: (newCode) async {
+                                      // Call _updateUserWithNewCode here
+                                      await _updateUserWithNewCode(newCode);
+                                    },
                                   ),
                                 );
                               },
@@ -298,20 +328,31 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildEditableInfoRow(String label, TextEditingController controller,
       {bool readOnly = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        readOnly: readOnly,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Por favor ingrese $label';
-          }
-          return null;
-        },
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+          Expanded(
+            flex: 2,
+            child: TextFormField(
+              controller: controller,
+              readOnly: readOnly,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 10),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Este campo es obligatorio';
+                }
+                return null;
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

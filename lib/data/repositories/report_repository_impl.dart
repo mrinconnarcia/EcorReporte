@@ -4,7 +4,8 @@ import 'package:ecoreporte/domain/entities/report.dart';
 import 'package:ecoreporte/domain/entities/report_summary.dart';
 
 class ReportRepositoryImpl {
-  // final String initialApiUrl = "http://54.225.155.228:3001/api/reporting/reports";
+  // final String initialApiUrl =
+  //     "http://54.225.155.228:3001/api/reporting/reports";
   final String initialApiUrl =
       "https://reporting-service-3.onrender.com/reports";
 
