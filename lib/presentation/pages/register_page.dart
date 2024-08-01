@@ -39,61 +39,15 @@ class _RegisterPageState extends State<RegisterPage> {
     return regex.hasMatch(phone);
   }
 
-  // void _showTermsAndConditions() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         contentPadding:
-  //             EdgeInsets.fromLTRB(24.0, 20.0, 24.0, 0.0), // Ajuste de padding
-  //         title: Container(
-  //           padding: EdgeInsets.all(20.0), // Espaciado interior para el título
-  //           child: Text('Términos y Condiciones', textAlign: TextAlign.center),
-  //         ),
-  //         content: Container(
-  //           width: double.maxFinite, // Ancho máximo posible
-  //           constraints: BoxConstraints(
-  //               maxHeight:
-  //                   MediaQuery.of(context).size.height * 0.85), // Máximo alto
-  //           child: SingleChildScrollView(
-  //             child: Text(
-  //               '''Políticas de Privacidad de Eco-Reporte
+  String sanitizeInput(String input) {
+    final whitelist = RegExp(r'^[a-zA-Z0-9@.]+$');
+    return whitelist.hasMatch(input) ? input : '';
+  }
 
-  //                 Eco-Reporte, con domicilio en Calle Sin Nombre, Sin Número, Colonia Distrito Federal, Chiapa de Corzo, Chiapas, 29179, México, y correo electrónico innobytesoftw@gmail.com, es responsable del uso y protección de sus datos personales.
-
-  //                 **Fines del uso de sus datos personales:**
-  //                 1. **Gestión y resolución de reportes ecológicos:** Para registrar reportes de problemas ecológicos y asignar los casos a las autoridades competentes.
-  //                 2. **Comunicación con autoridades y administradores:** Para mantener una comunicación eficiente sobre el estado de su reporte y responder consultas.
-  //                 3. **Seguimiento y actualización de reportes ecológicos:** Para monitorear el progreso y estado de los reportes.
-
-  //                 **Fines adicionales:**
-  //                 1. **Envío de información y material educativo:** Con su consentimiento, para enviarle boletines y material educativo sobre temas ecológicos.
-  //                 2. **Realización de encuestas:** Para mejorar nuestros servicios mediante encuestas y estudios de opinión.
-
-  //                 **Consulta del aviso de privacidad integral:**
-  //                 Para más información sobre el tratamiento de sus datos personales, puede consultar nuestro aviso de privacidad integral en:
-  //                 - **Página web:** [EcoReporte](https://eco-reporte-f44a0.web.app)
-  //                 - **Correo electrónico:** Solicitándolo a innobytesoftw@gmail.com
-  //                 - **Teléfono:** 9613315517
-  //                 - **Oficinas físicas:** Calle Sin Nombre, Sin Número, Colonia Distrito Federal, Chiapa de Corzo, Chiapas, 29179, México.
-
-  //                 Nos comprometemos a informarle sobre cualquier cambio significativo en nuestro aviso de privacidad. En caso de modificaciones, le notificaremos a través de los medios de contacto proporcionados y actualizaremos el documento en nuestra página web.
-  //                 ''',
-  //             ),
-  //           ),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Text('Cerrar'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  String blacklistInput(String input) {
+    final blacklist = RegExp(r'[<>!@#$%^&*()_+=\[\]{};:"\\|,.<>\/?~]');
+    return input.replaceAll(blacklist, '');
+  }
 
   void _showTermsAndConditions() {
     AwesomeDialog(
@@ -241,11 +195,11 @@ class _RegisterPageState extends State<RegisterPage> {
                               }
                               return null;
                             },
-                            keyboardType: TextInputType.emailAddress,
                           ),
                           SizedBox(height: 20),
                           TextFormField(
                             controller: _passwordController,
+                            obscureText: _obscureText,
                             decoration: InputDecoration(
                               labelText: 'Contraseña',
                               border: OutlineInputBorder(
@@ -262,7 +216,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                 },
                               ),
                             ),
-                            obscureText: _obscureText,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Por favor ingrese su contraseña';
@@ -276,162 +229,146 @@ class _RegisterPageState extends State<RegisterPage> {
                           TextFormField(
                             controller: _phoneController,
                             decoration: InputDecoration(
-                              labelText: 'Número de teléfono',
+                              labelText: 'Teléfono',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Por favor ingrese su número de teléfono';
+                                return 'Por favor ingrese su teléfono';
                               } else if (!isPhoneValid(value)) {
-                                return 'Por favor ingrese un número de teléfono válido';
+                                return 'Por favor ingrese un teléfono válido';
                               }
                               return null;
                             },
-                            keyboardType: TextInputType.phone,
                           ),
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
                             value: _selectedGender,
+                            items: [
+                              DropdownMenuItem(
+                                child: Text('Masculino'),
+                                value: 'Masculino',
+                              ),
+                              DropdownMenuItem(
+                                child: Text('Femenino'),
+                                value: 'Femenino',
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGender = value!;
+                              });
+                            },
                             decoration: InputDecoration(
                               labelText: 'Género',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            items:
-                                ['Masculino', 'Femenino', 'Otro'].map((gender) {
-                              return DropdownMenuItem<String>(
-                                value: gender,
-                                child: Text(gender),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedGender = value!;
-                              });
-                            },
                           ),
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
                             value: _selectedRole,
+                            items: [
+                              DropdownMenuItem(
+                                child: Text('Usuario'),
+                                value: 'usuario',
+                              ),
+                              DropdownMenuItem(
+                                child: Text('Administrador'),
+                                value: 'administrador',
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedRole = value!;
+                              });
+                            },
                             decoration: InputDecoration(
                               labelText: 'Rol',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            items: ['usuario', 'admin'].map((role) {
-                              return DropdownMenuItem<String>(
-                                value: role,
-                                child: Text(role),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedRole = value!;
-                                if (_selectedRole == 'admin') {
-                                  _codeController.text = '';
-                                }
-                              });
-                            },
                           ),
                           SizedBox(height: 20),
                           TextFormField(
                             controller: _codeController,
-                            enabled: _selectedRole == 'usuario',
                             decoration: InputDecoration(
-                              labelText: 'Código',
+                              labelText: 'Código (opcional)',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            validator: (value) {
-                              if (_selectedRole == 'usuario' &&
-                                  (value == null || value.isEmpty)) {
-                                return 'Por favor ingrese su código';
-                              }
-                              return null;
+                          ),
+                          SizedBox(height: 20),
+                          CheckboxListTile(
+                            title: GestureDetector(
+                              onTap: _showTermsAndConditions,
+                              child: Text(
+                                'Aceptar términos y condiciones',
+                                style: TextStyle(
+                                    decoration: TextDecoration.underline),
+                              ),
+                            ),
+                            value: _acceptTerms,
+                            onChanged: (value) {
+                              setState(() {
+                                _acceptTerms = value!;
+                              });
                             },
                           ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                value: _acceptTerms,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _acceptTerms = value!;
-                                  });
-                                },
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  _showTermsAndConditions();
-                                },
-                                child: Text(
-                                  'Acepto los Términos y Condiciones',
-                                  style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          if (_errorMessage != null)
-                            Text(
-                              _errorMessage!,
-                              style: TextStyle(color: Colors.red),
-                              textAlign: TextAlign.center,
-                            ),
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                if (!_acceptTerms) {
-                                  setState(() {
-                                    _errorMessage =
-                                        'Debe aceptar los términos y condiciones';
-                                  });
-                                  return;
-                                }
-                                final user = User(
-                                  name: _nameController.text,
-                                  lastName: _lastNameController.text,
-                                  email: _emailController.text,
-                                  phone: _phoneController.text,
-                                  gender: _selectedGender,
-                                  role: _selectedRole,
-                                  code: _codeController.text,
+                              if (_formKey.currentState!.validate() &&
+                                  _acceptTerms) {
+                                // Obtener los datos del formulario
+                                String name = sanitizeInput(_nameController.text.trim());
+                                String lastName = sanitizeInput(_lastNameController.text.trim());
+                                String email = sanitizeInput(_emailController.text.trim().toLowerCase());
+                                String password = _passwordController.text.trim();
+                                String phone = _phoneController.text.trim();
+                                String code = _codeController.text.trim();
+                                String gender = _selectedGender;
+                                String role = _selectedRole;
+
+                                User user = User(
+                                  name: name,
+                                  lastName: lastName,
+                                  email: email,
+                                  phone: phone,
+                                  gender: gender,
+                                  role: role,
+                                  code: code,
                                 );
-                                BlocProvider.of<AuthenticationBloc>(context)
-                                    .add(RegisterEvent(
-                                        user, _passwordController.text));
+
+                                BlocProvider.of<AuthenticationBloc>(context).add(RegisterEvent(user, password));
+                              } else {
+                                setState(() {
+                                  _errorMessage =
+                                      'Por favor complete todos los campos correctamente y acepte los términos y condiciones';
+                                });
                               }
                             },
-                            child: Text('Registrarse'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              minimumSize: Size(double.infinity, 50),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
+                            child: Text('Registrarse'),
                           ),
-                          SizedBox(height: 20),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushReplacementNamed('/login');
-                            },
-                            child: Text('¿Ya tienes una cuenta? Inicia sesión',
-                                style: TextStyle(color: Colors.green)),
-                          ),
+                          if (_errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                         ],
                       ),
                     ),

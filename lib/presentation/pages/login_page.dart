@@ -41,6 +41,28 @@ class _LoginPageState extends State<LoginPage> {
     await storage.saveToken(token);
   }
 
+  String escapeHtml(String input) {
+    return input.replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+  }
+
+  String escapeJavaScript(String input) {
+    return input.replaceAll(r'\', r'\\')
+                .replaceAll('"', r'\"')
+                .replaceAll("'", r"\'")
+                .replaceAll('\n', r'\n')
+                .replaceAll('\r', r'\r')
+                .replaceAll('\u2028', r'\u2028')
+                .replaceAll('\u2029', r'\u2029');
+  }
+
+  String escapeUrl(String input) {
+    return Uri.encodeComponent(input);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,11 +155,11 @@ class _LoginPageState extends State<LoginPage> {
                       ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
+                            String email = escapeHtml(_emailController.text);
+                            String password = escapeHtml(_passwordController.text);
+
                             BlocProvider.of<AuthenticationBloc>(context).add(
-                              LoginEvent(
-                                _emailController.text,
-                                _passwordController.text,
-                              ),
+                              LoginEvent(email, password),
                             );
                           }
                         },

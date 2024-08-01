@@ -4,7 +4,7 @@ import 'dart:math';
 import '../../data/repositories/community_repository_impl.dart';
 
 class CreateCommunityModal extends StatefulWidget {
-  final Function(String) onCommunityCreated; // Cambiado a Function(String) para pasar el código
+  final Function(String) onCommunityCreated; 
 
   CreateCommunityModal({required this.onCommunityCreated});
 
